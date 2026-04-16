@@ -1,5 +1,5 @@
-/* Service Worker — 诗词永流传 */
-const CACHE_NAME = 'shici-v2';
+/* Service Worker — 诗词咏流传 */
+const CACHE_NAME = 'shici-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -25,11 +25,10 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: cache-first for same-origin, network-first for fonts/external
+// Fetch: cache-first for same-origin, stale-while-revalidate for external
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // External resources (fonts etc): stale-while-revalidate
   if (url.origin !== location.origin) {
     event.respondWith(
       caches.open(CACHE_NAME).then(cache =>

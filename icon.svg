@@ -11,6 +11,6 @@
   <!-- Character 诗 (poetry) in gold -->
   <text x="256" y="310" text-anchor="middle" font-family="serif" font-size="200" font-weight="bold" fill="#e8c95d">诗</text>
   <!-- Bottom subtitle -->
-  <text x="256" y="460" text-anchor="middle" font-family="serif" font-size="36" fill="#b8860b" letter-spacing="8">永流传</text>
+  <text x="256" y="460" text-anchor="middle" font-family="serif" font-size="36" fill="#b8860b" letter-spacing="8">咏流传</text>
 </svg>
 

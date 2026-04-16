@@ -4,15 +4,15 @@
 <meta charset="UTF-8" />
 <!-- iOS safe-area & viewport-fit=cover for notch/Dynamic Island -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<title>诗词永流传</title>
+<title>诗词咏流传</title>
 
 <!-- PWA / iOS Home Screen -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="诗词永流传" />
+<meta name="apple-mobile-web-app-title" content="诗词咏流传" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="theme-color" content="#b8860b" />
-<meta name="application-name" content="诗词永流传" />
+<meta name="application-name" content="诗词咏流传" />
 
 <!-- Icons — apple-touch-icon is generated dynamically via canvas (see JS) -->
 <link rel="apple-touch-icon" id="apple-touch-icon-link" href="icon.svg" />
@@ -307,7 +307,7 @@
 <!-- ===== Home Screen ===== -->
 <div id="screen-home" class="screen active">
   <div class="home-title">
-    <h1>诗词永流传</h1>
+    <h1>诗词咏流传</h1>
     <div class="subtitle">吟诵千古，传承文脉</div>
     <div><span class="seal">文墨留香</span></div>
   </div>
@@ -1097,7 +1097,7 @@ function recordAnswer() {
   } else {
     updateDot(gs.idx);
     updateAnsweredCount();
-    setTimeout(() => { if (gs.idx < TOTAL_Q - 1) goQuestion(1); }, 800);
+    setTimeout(() => { if (gs.idx < TOTAL_Q - 1) goQuestion(1); }, 550);
   }
 }
 
@@ -1236,8 +1236,7 @@ function renderQ2(q, idx) {
     + '<div class="question-label" style="font-size:12px;margin-bottom:10px">' + poemLabel + '</div>'
     + '<div class="question-label">— 选择正确的字词填入空白处 —</div>'
     + '<div class="fill-line">' + (q.userAnswer !== null ? filledLineHtml : lineHtml) + '</div>'
-    + '<div class="fill-options" style="gap:10px;margin-top:8px">' + optionsHtml + '</div>'
-    + (q.userAnswer !== null && !gs.unlimited && !gs.submitted ? '<div style="text-align:center;margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetAnswer(' + idx + ')">🔄 重新作答</button></div>' : '');
+    + '<div class="fill-options" style="gap:10px;margin-top:8px">' + optionsHtml + '</div>';
 }
 
 
@@ -1261,8 +1260,7 @@ function renderQ5(q, idx) {
     + '<div class="question-label">— 判断以下说法是否正确 —</div>'
     + '<div class="judge-statement" style="font-size:clamp(15px,3.2vw,20px);line-height:2.2;letter-spacing:3px;text-align:center">' + q.statement + '</div>'
     + '<div class="tf-row"><button class="tf-btn tf-yes' + yesState + '" ' + dis + ' onclick="selectTF(' + idx + ',true)">✅ 是</button><button class="tf-btn tf-no' + noState + '" ' + dis + ' onclick="selectTF(' + idx + ',false)">❌ 否</button></div>'
-    + feedbackHtml
-    + (q.userAnswer !== null && !gs.unlimited && !gs.submitted ? '<div style="text-align:center;margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetAnswer(' + idx + ')">🔄 重新作答</button></div>' : '');
+    + feedbackHtml;
 }
 
 function renderQ6(q, idx) {
@@ -1320,8 +1318,7 @@ function renderQ6(q, idx) {
     + '<div class="question-label">— 从下列文字中找出一句' + typeLabel + ' —</div>'
     + '<div class="compose-answer-row">' + slotsHtml + '</div>'
     + '<div class="' + gridClass + '">' + gridHtml + '</div>'
-    + submitBtn + feedbackHtml
-    + (q.userAnswer !== null && !gs.unlimited && !gs.submitted ? '<div style="text-align:center;margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetAnswer(' + idx + ')">🔄 重新作答</button></div>' : '');
+    + submitBtn + feedbackHtml;
 }
 
 function selectQ6Char(idx, charIdx) {
@@ -1351,16 +1348,6 @@ function clearQ6(idx) {
   if (q.userAnswer !== null) return;
   q.selectedIndices = [];
   renderQuestion(idx);
-}
-
-function resetAnswer(idx) {
-  const q = gs.questions[idx];
-  if (q.userAnswer === null) return;
-  q.userAnswer = null;
-  if (q.type === 6) q.selectedIndices = [];
-  renderQuestion(idx);
-  updateDot(gs.idx);
-  updateAnsweredCount();
 }
 
 function submitQ6(idx) {

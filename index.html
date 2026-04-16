@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<!-- iOS safe-area & viewport-fit=cover for notch/Dynamic Island -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>诗词永流传</title>
+
+<!-- PWA / iOS Home Screen -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="诗词永流传" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#b8860b" />
+<meta name="application-name" content="诗词永流传" />
+
+<!-- Icons — apple-touch-icon is generated dynamically via canvas (see JS) -->
+<link rel="apple-touch-icon" id="apple-touch-icon-link" href="icon.svg" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="manifest" href="manifest.json" />
+
+<!-- Fonts: use system serif fonts for offline capability -->
+<style>
+  @font-face {
+    font-family: 'PoemFont';
+    src: local('Noto Serif SC'), local('Songti SC'), local('STSong'), local('SimSun'),
+         local('KaiTi'), local('STKaiti'), local('FangSong'), local('serif');
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'PoemFont';
+    src: local('Noto Serif SC Bold'), local('Songti SC Bold'), local('STSong'),
+         local('SimSun'), local('KaiTi'), local('STKaiti'), local('serif');
+    font-weight: 700;
+    font-display: swap;
+  }
+</style>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ===== iOS / Mobile Fixes ===== */
+  * {
+    -webkit-tap-highlight-color: transparent;  /* remove grey flash on tap */
+    -webkit-touch-callout: none;               /* disable callout on long-press */
+  }
+  button, [role="button"] {
+    touch-action: manipulation;   /* prevent double-tap zoom delay */
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+  }
+  /* Smooth momentum scrolling on iOS for overflow-y:auto containers */
+  .screen { -webkit-overflow-scrolling: touch; }
+
+  :root {
+    --paper: #fdf6e3; --paper2: #f5e8c8; --ink: #1c0f06; --ink-light: #4a3728;
+    --red: #9b1b1b; --gold: #b8860b; --gold-light: #e8c95d; --green: #2d6a4f;
+    --radius: 8px; --shadow: 0 4px 20px rgba(0,0,0,0.18);
+  }
+  html, body {
+    width: 100%; height: 100%;
+    /* Use dvh for dynamic viewport height (handles iOS Safari toolbar) */
+    height: 100dvh;
+    font-family: 'PoemFont', 'Noto Serif SC', 'Songti SC', 'KaiTi', 'FangSong', 'STKaiti', serif;
+    background: var(--paper); color: var(--ink); overflow-x: hidden;
+    /* Prevent bounce scroll on iOS body */
+    overscroll-behavior: none;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 30%, rgba(180,140,80,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 70%, rgba(150,100,50,0.06) 0%, transparent 55%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .screen {
+    position: fixed; inset: 0; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; opacity: 0; pointer-events: none; transform: translateY(30px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .screen.active { opacity: 1; pointer-events: all; transform: translateY(0); }
+
+  /* Home */
+  #screen-home { gap: 26px; }
+  .home-title { text-align: center; animation: fadeInDown 0.8s ease; }
+  .home-title h1 { font-size: clamp(36px,8vw,64px); color: var(--ink); letter-spacing: 8px; text-shadow: 2px 3px 6px rgba(0,0,0,0.15); line-height: 1.2; }
+  .home-title .subtitle { font-size: 16px; color: var(--ink-light); letter-spacing: 4px; margin-top: 8px; }
+  .seal { display: inline-block; background: var(--red); color: #fff; font-size: 13px; padding: 6px 10px; border-radius: 4px; letter-spacing: 2px; margin-top: 4px; transform: rotate(-3deg); box-shadow: 2px 2px 6px rgba(0,0,0,0.2); }
+  .divider { width: 200px; height: 2px; background: linear-gradient(to right, transparent, var(--gold), transparent); margin: 4px auto; }
+  .home-info-box { background: var(--paper2); border: 1px solid var(--gold); border-radius: var(--radius); padding: 16px 32px; display: flex; gap: 32px; font-size: 14px; color: var(--ink-light); animation: fadeInUp 0.9s ease 0.1s both; }
+  .home-info-box .info-item { text-align: center; }
+  .home-info-box .info-val { font-size: 26px; font-weight: 700; color: var(--ink); display: block; letter-spacing: 2px; }
+
+  /* Mode cards */
+  .mode-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; animation: fadeInUp 0.9s ease 0.15s both; max-width: 720px; }
+  .mode-card {
+    background: var(--paper2); border: 2px solid var(--gold); border-radius: 12px;
+    padding: 18px 16px; width: 150px; text-align: center; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    box-shadow: var(--shadow); position: relative;
+  }
+  .mode-card:hover { transform: translateY(-5px); box-shadow: 0 10px 28px rgba(0,0,0,0.2); background: #faebd0; }
+  .mode-card .card-icon { font-size: 32px; margin-bottom: 8px; }
+  .mode-card .card-title { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: 3px; }
+  .mode-card .card-desc { font-size: 11px; color: var(--ink-light); margin-top: 6px; line-height: 1.6; letter-spacing: 1px; }
+  .mode-card.mixed { border-color: var(--red); }
+  .mode-card.mixed .card-title { color: var(--red); }
+  .mode-card .card-badge { position: absolute; top: -8px; right: -8px; background: var(--red); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px; }
+
+  /* Buttons */
+  .btn { font-family: inherit; padding: 12px 36px; border: none; border-radius: var(--radius); font-size: 16px; letter-spacing: 2px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, filter 0.15s; box-shadow: 0 3px 10px rgba(0,0,0,0.15); }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+  .btn:active { transform: translateY(0); filter: brightness(0.95); }
+  .btn-primary { background: var(--red); color: #fff; }
+  .btn-gold { background: var(--gold); color: #fff; }
+  .btn-outline { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
+  .btn-sm { padding: 8px 18px; font-size: 13px; }
+  .btn-lg { padding: 16px 52px; font-size: 20px; letter-spacing: 4px; }
+  .btn:disabled { opacity: 0.45; cursor: default; transform: none !important; box-shadow: none !important; }
+
+  /* Game screen */
+  #screen-game { justify-content: flex-start; padding: 0; overflow-y: auto; overflow-x: hidden; }
+  /* iOS: sticky topbar needs extra top padding for status bar */
+  .game-topbar {
+    position: sticky; top: 0; z-index: 50; width: 100%;
+    background: rgba(253,246,227,0.97);
+    border-bottom: 1px solid rgba(184,134,11,0.3);
+    padding: 10px 16px;
+    /* Push content below iOS status bar when in standalone mode */
+    padding-top: max(10px, env(safe-area-inset-top, 10px));
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  }
+  .timer-box { display: flex; align-items: center; gap: 5px; background: var(--paper2); border: 1px solid var(--gold); border-radius: 20px; padding: 6px 16px; font-size: 20px; font-weight: 700; letter-spacing: 2px; min-width: 88px; justify-content: center; }
+  .timer-box.warning { color: var(--red); border-color: var(--red); animation: pulse 0.8s ease infinite; }
+  .q-counter-label { font-size: 15px; color: var(--ink-light); letter-spacing: 2px; }
+
+  /* Dot nav */
+  .dot-nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px 4px; justify-content: center; width: 100%; max-width: 680px; margin: 0 auto; }
+  .q-dot { width: 28px; height: 28px; border-radius: 50%; background: rgba(184,134,11,0.12); border: 2px solid rgba(184,134,11,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ink-light); transition: all 0.2s; }
+  .q-dot:hover { transform: scale(1.15); }
+  .q-dot.active { border-color: var(--gold); background: var(--gold); color: #fff; font-weight: 700; }
+  .q-dot.answered { background: rgba(184,134,11,0.35); border-color: var(--gold); color: var(--ink); }
+  .q-dot.answered.active { background: var(--gold); color: #fff; }
+  .q-dot.res-correct { background: var(--green) !important; border-color: var(--green) !important; color: #fff !important; }
+  .q-dot.res-wrong { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; }
+
+  /* Question card */
+  .q-card { background: rgba(253,246,227,0.97); border: 1px solid var(--gold); border-radius: 12px; padding: 24px 28px; max-width: 660px; width: calc(100% - 32px); box-shadow: var(--shadow); position: relative; margin: 8px auto 0; }
+  .q-card::before { content: ''; position: absolute; inset: 6px; border: 1px solid rgba(184,134,11,0.2); border-radius: 8px; pointer-events: none; }
+  .q-type-badge { display: inline-block; font-size: 12px; letter-spacing: 2px; background: var(--gold); color: #fff; padding: 3px 10px; border-radius: 12px; margin-bottom: 12px; }
+  .q-type-badge.t2 { background: #5b8dd9; }
+  .q-type-badge.t3 { background: #7b5ea7; }
+  .q-type-badge.t4 { background: #c17a2e; }
+  .q-type-badge.t5 { background: #d4534a; }
+  .q-type-badge.t6 { background: #2e8b57; }
+
+  /* Type 6: pick chars to form poem */
+  .compose-answer-row { display: flex; gap: 4px; justify-content: center; margin-bottom: 14px; min-height: 52px; flex-wrap: wrap; }
+  .compose-slot { width: 44px; height: 44px; border: 2px solid var(--gold); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--ink); background: var(--paper2); letter-spacing: 0; cursor: pointer; transition: all 0.15s; }
+  .compose-slot.empty { border-style: dashed; color: var(--ink-light); font-size: 16px; }
+  .compose-slot:hover:not(.empty) { background: #f0ddb0; }
+  .compose-grid { display: grid; gap: 8px; justify-content: center; }
+  .compose-grid.g3 { grid-template-columns: repeat(3, 1fr); max-width: 180px; margin: 0 auto; }
+  .compose-grid.g4 { grid-template-columns: repeat(4, 1fr); max-width: 240px; margin: 0 auto; }
+  .compose-char-btn { font-family: inherit; font-size: 22px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--gold); border-radius: 6px; background: var(--paper); color: var(--ink); cursor: pointer; transition: all 0.15s; box-shadow: 2px 2px 6px rgba(0,0,0,0.08); letter-spacing: 0; }
+  .compose-char-btn:hover:not(:disabled):not(.used) { background: var(--paper2); transform: scale(1.08); }
+  .compose-char-btn.used { opacity: 0.3; cursor: default; }
+  .compose-char-btn:disabled { cursor: default; }
+  .compose-char-btn.correct { background: var(--green) !important; border-color: var(--green) !important; color: #fff !important; opacity: 1 !important; }
+  .compose-char-btn.wrong { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; opacity: 1 !important; }
+  .question-label { font-size: 13px; color: var(--ink-light); letter-spacing: 3px; text-align: center; margin-bottom: 14px; }
+  .prompt-line { font-size: clamp(20px,4.5vw,30px); text-align: center; letter-spacing: 6px; color: var(--ink); padding: 14px; background: rgba(184,134,11,0.08); border-radius: var(--radius); margin-bottom: 18px; border-left: 4px solid var(--gold); }
+  .poem-lines-display { text-align: center; font-size: clamp(16px,3.5vw,22px); line-height: 2.2; letter-spacing: 5px; color: var(--ink); padding: 14px; background: rgba(184,134,11,0.06); border-radius: var(--radius); margin-bottom: 14px; border-left: 4px solid var(--gold); }
+
+  /* Type 1: single-char grid */
+  .grid-9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .grid-12 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .grid-char-btn {
+    font-family: inherit; font-size: clamp(20px,4vw,28px); letter-spacing: 0;
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--gold); border-radius: var(--radius);
+    background: var(--paper); color: var(--ink); cursor: pointer;
+    transition: background 0.18s, transform 0.14s;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.08);
+  }
+  .grid-char-btn:hover:not(:disabled):not(.correct):not(.wrong) { background: var(--paper2); transform: scale(1.06) rotate(-2deg); }
+  .grid-char-btn.correct { background: var(--green) !important; border-color: var(--green) !important; color: #fff !important; animation: inkSpread 0.4s ease; }
+  .grid-char-btn.wrong { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; animation: shake 0.35s ease; }
+  .grid-char-btn:disabled { cursor: default; }
+
+  /* Type 2: fill blank */
+  .fill-line { font-size: clamp(22px,5vw,32px); text-align: center; letter-spacing: 8px; padding: 16px; margin-bottom: 12px; background: rgba(184,134,11,0.08); border-radius: var(--radius); border-left: 4px solid var(--gold); line-height: 2; }
+  .fill-blank-char { display: inline-block; min-width: 1.1em; height: 1.2em; border-bottom: 3px solid var(--red); color: var(--red); font-weight: 700; text-align: center; line-height: 1.2; vertical-align: middle; }
+  .fill-blank-char.filled { color: var(--green); border-bottom-color: var(--green); }
+  .fill-blank-num { font-size: 0.55em; vertical-align: super; color: var(--gold); }
+  .fill-options { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+  .blank-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .blank-row-label { font-size: 15px; color: var(--gold); min-width: 32px; font-weight: 700; }
+  .fill-opt-btn { font-family: inherit; font-size: 24px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--gold); border-radius: 8px; background: var(--paper); color: var(--ink); cursor: pointer; transition: all 0.15s; box-shadow: 2px 2px 6px rgba(0,0,0,0.08); letter-spacing: 0; }
+  .fill-opt-btn:hover:not(:disabled):not(.correct):not(.wrong) { background: var(--paper2); transform: scale(1.1) rotate(-2deg); }
+  .fill-opt-btn.correct { background: var(--green) !important; border-color: var(--green) !important; color: #fff !important; animation: inkSpread 0.4s; }
+  .fill-opt-btn.wrong { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; animation: shake 0.35s ease; }
+  .fill-opt-btn:disabled { cursor: default; }
+
+  /* Type 3 & 4: true/false */
+  .judge-statement { font-size: clamp(13px,2.8vw,16px); line-height: 1.9; letter-spacing: 2px; color: var(--ink-light); padding: 14px 16px; background: rgba(28,15,6,0.04); border-radius: var(--radius); border: 1px dashed var(--gold); margin-bottom: 18px; }
+  .judge-statement .stmt-label { font-size: 11px; color: var(--gold); letter-spacing: 3px; display: block; margin-bottom: 6px; }
+  .tf-row { display: flex; gap: 16px; justify-content: center; }
+  .tf-btn { font-family: inherit; font-size: 18px; font-weight: 700; letter-spacing: 4px; padding: 14px 38px; border-radius: var(--radius); cursor: pointer; transition: all 0.18s; box-shadow: 0 3px 10px rgba(0,0,0,0.12); }
+  .tf-btn.tf-yes { background: var(--paper2); border: 2px solid var(--green); color: var(--green); }
+  .tf-btn.tf-no { background: var(--paper2); border: 2px solid var(--red); color: var(--red); }
+  .tf-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
+  .tf-btn.selected-yes { background: var(--green); color: #fff; }
+  .tf-btn.selected-no { background: var(--red); color: #fff; }
+  .tf-btn:disabled { cursor: default; }
+
+  /* Game nav — add bottom safe area for iPhone home indicator */
+  .game-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 660px; width: calc(100% - 32px); margin: 12px auto;
+    gap: 8px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  }
+
+  /* Result screen */
+  #screen-result { justify-content: flex-start; padding: 0; overflow-y: auto; overflow-x: hidden; }
+  .result-header {
+    width: 100%; background: var(--paper2); border-bottom: 2px solid var(--gold);
+    padding: 22px 20px 14px; text-align: center; position: sticky; top: 0; z-index: 10;
+    /* iOS standalone: push below status bar */
+    padding-top: max(22px, calc(env(safe-area-inset-top, 0px) + 12px));
+  }
+  .result-title { font-size: 24px; font-weight: 700; color: var(--red); letter-spacing: 6px; margin-bottom: 10px; }
+  .result-score-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+  .result-stat { text-align: center; }
+  .result-stat .val { font-size: 26px; font-weight: 700; color: var(--ink); display: block; }
+  .result-stat .lbl { font-size: 12px; color: var(--ink-light); letter-spacing: 2px; }
+  .result-list { max-width: 680px; width: 100%; margin: 0 auto; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .res-q-card { background: var(--paper); border: 1px solid var(--gold); border-radius: 10px; padding: 14px 18px; border-left: 5px solid var(--gold); }
+  .res-q-card.res-correct { border-left-color: var(--green); }
+  .res-q-card.res-wrong { border-left-color: var(--red); }
+  .res-q-num { font-size: 12px; color: var(--ink-light); letter-spacing: 2px; margin-bottom: 6px; }
+  .res-q-content { font-size: 14px; line-height: 1.85; letter-spacing: 1px; color: var(--ink); }
+  .res-correct-txt { color: var(--green); font-weight: 700; }
+  .res-wrong-txt { color: var(--red); font-weight: 700; }
+  /* Result bottom row — safe area for iPhone home bar */
+  .res-btn-row {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    padding: 8px 16px;
+    padding-bottom: max(28px, calc(env(safe-area-inset-bottom, 0px) + 16px));
+  }
+  .highscore-badge { background: var(--gold); color: #fff; font-size: 13px; padding: 4px 14px; border-radius: 20px; letter-spacing: 2px; display: inline-block; animation: pulse 1.2s ease infinite; }
+
+  /* Animations */
+  @keyframes fadeInDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes inkSpread { 0%{transform:scale(0.95);opacity:0.7} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  @media (max-width: 520px) {
+    .q-card { padding: 16px 12px; }
+    .tf-btn { padding: 12px 22px; font-size: 16px; }
+    .fill-opt-btn { width: 50px; height: 50px; font-size: 20px; }
+    .game-topbar { flex-wrap: wrap; }
+    /* Home screen: tighter on small phones */
+    #screen-home { gap: 18px; padding: 16px; }
+    .home-title h1 { letter-spacing: 4px; }
+    .mode-cards { gap: 10px; }
+    .mode-card { width: 130px; padding: 14px 10px; }
+  }
+
+  /* iOS standalone mode: extra top padding on home screen for notch */
+  @media (display-mode: standalone) {
+    #screen-home {
+      padding-top: max(20px, env(safe-area-inset-top, 20px));
+      padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    }
+    /* Dot nav: leave space for the notch area */
+    .dot-nav { padding-top: 6px; }
+  }
+
+  /* PWA install banner hint */
+  #ios-install-hint {
+    position: fixed; bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    left: 50%; transform: translateX(-50%);
+    background: rgba(28,15,6,0.88); color: #fdf6e3;
+    border-radius: 12px; padding: 10px 18px; font-size: 13px;
+    letter-spacing: 1px; line-height: 1.6; text-align: center;
+    max-width: calc(100% - 40px); z-index: 999;
+    display: none; /* shown via JS */
+    animation: fadeInUp 0.4s ease;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  #ios-install-hint .hint-close {
+    display: block; margin-top: 6px; font-size: 11px;
+    color: var(--gold-light); cursor: pointer; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Home Screen ===== -->
+<div id="screen-home" class="screen active">
+  <div class="home-title">
+    <h1>诗词永流传</h1>
+    <div class="subtitle">吟诵千古，传承文脉</div>
+    <div><span class="seal">文墨留香</span></div>
+  </div>
+  <div class="divider"></div>
+  <div class="mode-cards">
+    <div class="mode-card" onclick="startGame(2)">
+      <div class="card-icon">✏️</div>
+      <div class="card-title">选词填空</div>
+      <div class="card-desc">诗句挖空<br/>ABCD选择</div>
+    </div>
+    <div class="mode-card" onclick="startGame(5)">
+      <div class="card-icon">❓</div>
+      <div class="card-title">诗词判断</div>
+      <div class="card-desc">综合判断<br/>是非对错</div>
+    </div>
+    <div class="mode-card" onclick="startGame(6)">
+      <div class="card-icon">🧩</div>
+      <div class="card-title">选词组诗</div>
+      <div class="card-desc">从字阵中<br/>组出诗句</div>
+    </div>
+    <div class="mode-card mixed" onclick="startGame(0)">
+      <div class="card-badge">推荐</div>
+      <div class="card-icon">🎲</div>
+      <div class="card-title">综合训练</div>
+      <div class="card-desc">三种题型<br/>混合挑战</div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--ink-light);letter-spacing:1px;text-align:center;line-height:2;animation:fadeInUp 0.9s ease 0.3s both">
+    限时 8 分钟 · 20 道题 · 答题期间可自由返回修改 · 时间结束自动交卷
+  </div>
+  <div id="home-highscore" style="font-size:13px;color:var(--ink-light);letter-spacing:1px;margin-top:-6px;text-align:center;"></div>
+</div>
+
+<!-- ===== Game Screen ===== -->
+<div id="screen-game" class="screen">
+  <div class="game-topbar">
+    <div class="timer-box" id="timer-box">⏱ <span id="timer-text">08:00</span></div>
+    <div class="q-counter-label" id="q-counter">1 / 20</div>
+    <button class="btn btn-gold btn-sm" onclick="confirmSubmit()">提前交卷</button>
+  </div>
+  <div class="dot-nav" id="dot-nav"></div>
+  <div id="question-container" style="width:100%;max-width:680px;margin:0 auto;padding:0 16px;"></div>
+  <div class="game-nav">
+    <button class="btn btn-outline btn-sm" id="btn-prev" onclick="goQuestion(-1)">← 上一题</button>
+    <span style="font-size:13px;color:var(--ink-light)" id="answered-count">已答 0/20</span>
+    <button class="btn btn-outline btn-sm" id="btn-next" onclick="goQuestion(1)">下一题 →</button>
+  </div>
+</div>
+
+<!-- ===== Result Screen ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-header">
+    <div class="result-title" id="res-title">答题结束</div>
+    <div class="result-score-row">
+      <div class="result-stat"><span class="val" id="res-correct">0</span><span class="lbl">答对</span></div>
+      <div class="result-stat"><span class="val" id="res-total">20</span><span class="lbl">总题数</span></div>
+      <div class="result-stat"><span class="val" id="res-accuracy">0%</span><span class="lbl">正确率</span></div>
+      <div class="result-stat"><span class="val" id="res-time">—</span><span class="lbl">用时</span></div>
+    </div>
+    <div id="res-highscore" style="margin-top:6px;"></div>
+  </div>
+  <div class="result-list" id="result-list"></div>
+  <div class="res-btn-row">
+    <button class="btn btn-primary" onclick="goHome()">返回主页</button>
+    <button class="btn btn-gold" onclick="restartGame()">再玩一次</button>
+  </div>
+</div>
+
+<!-- iOS PWA install hint -->
+<div id="ios-install-hint">
+  📲 点击底部 <strong>分享</strong> 按钮，选择「<strong>添加到主屏幕</strong>」即可安装到 iPhone
+  <span class="hint-close" onclick="document.getElementById('ios-install-hint').style.display='none'">知道了，不再提示 ×</span>
+</div>
+
+<script>
+// ================================
+//  POEM DATA
+// ================================
+const POEMS = [
+  { title:"静夜思", author:"李白", dynasty:"唐",
+    lines:["床前明月光","疑是地上霜","举头望明月","低头思故乡"],
+    desc:"描写了诗人身处异乡，借明月抒发深深的思乡之情" },
+  { title:"春晓", author:"孟浩然", dynasty:"唐",
+    lines:["春眠不觉晓","处处闻啼鸟","夜来风雨声","花落知多少"],
+    desc:"描写了春天早晨醒来，听闻鸟鸣，感叹夜雨落花的春日意境" },
+  { title:"登鹳雀楼", author:"王之涣", dynasty:"唐",
+    lines:["白日依山尽","黄河入海流","欲穷千里目","更上一层楼"],
+    desc:"通过登楼远眺的壮阔景色，寄托了积极向上、不断进取的人生哲理" },
+  { title:"悯农（其一）", author:"李绅", dynasty:"唐",
+    lines:["春种一粒粟","秋收万颗子","四海无闲田","农夫犹饿死"],
+    desc:"揭示了封建社会农民辛苦耕作却依然饥寒交迫的悲惨现实" },
+  { title:"悯农（其二）", author:"李绅", dynasty:"唐",
+    lines:["锄禾日当午","汗滴禾下土","谁知盘中餐","粒粒皆辛苦"],
+    desc:"描写农民烈日下锄地劳作的辛苦，告诫世人珍惜粮食" },
+  { title:"江雪", author:"柳宗元", dynasty:"唐",
+    lines:["千山鸟飞绝","万径人踪灭","孤舟蓑笠翁","独钓寒江雪"],
+    desc:"以冰雪茫茫中独钓的老翁，寄托了诗人孤傲清高、不随世俗的情操" },
+  { title:"山行", author:"杜牧", dynasty:"唐",
+    lines:["远上寒山石径斜","白云深处有人家","停车坐爱枫林晚","霜叶红于二月花"],
+    desc:"描写秋日山行所见，以枫叶红胜春花表达了对秋景的独特赞美" },
+  { title:"望庐山瀑布", author:"李白", dynasty:"唐",
+    lines:["日照香炉生紫烟","遥看瀑布挂前川","飞流直下三千尺","疑是银河落九天"],
+    desc:"以浪漫夸张的笔法描写庐山瀑布的雄伟壮观，充满奇思妙想" },
+  { title:"早发白帝城", author:"李白", dynasty:"唐",
+    lines:["朝辞白帝彩云间","千里江陵一日还","两岸猿声啼不住","轻舟已过万重山"],
+    desc:"描写诗人遇赦后乘舟顺江而下，表达了轻松愉快、如释重负的心情" },
+  { title:"赠汪伦", author:"李白", dynasty:"唐",
+    lines:["李白乘舟将欲行","忽闻岸上踏歌声","桃花潭水深千尺","不及汪伦送我情"],
+    desc:"以桃花潭水之深比喻友情之深，表达了对友人汪伦深厚情谊的感激" },
+  { title:"望天门山", author:"李白", dynasty:"唐",
+    lines:["天门中断楚江开","碧水东流至此回","两岸青山相对出","孤帆一片日边来"],
+    desc:"描写天门山两岸峭壁夹江、长江奔腾东流的壮丽景观" },
+  { title:"绝句", author:"杜甫", dynasty:"唐",
+    lines:["两个黄鹂鸣翠柳","一行白鹭上青天","窗含西岭千秋雪","门泊东吴万里船"],
+    desc:"以鲜明色彩描绘了成都草堂春日生机盎然的美丽景象" },
+  { title:"春夜喜雨", author:"杜甫", dynasty:"唐",
+    lines:["好雨知时节","当春乃发生","随风潜入夜","润物细无声"],
+    desc:"以拟人手法赞美了春雨及时而来、悄无声息润泽万物的品格" },
+  { title:"枫桥夜泊", author:"张继", dynasty:"唐",
+    lines:["月落乌啼霜满天","江枫渔火对愁眠","姑苏城外寒山寺","夜半钟声到客船"],
+    desc:"描写了深秋夜晚停船枫桥，月落、乌啼、钟声交织出的旅途愁思" },
+  { title:"九月九日忆山东兄弟", author:"王维", dynasty:"唐",
+    lines:["独在异乡为异客","每逢佳节倍思亲","遥知兄弟登高处","遍插茱萸少一人"],
+    desc:"描写重阳佳节客居他乡的思亲之情，道出了天下游子共同的心声" },
+  { title:"鸟鸣涧", author:"王维", dynasty:"唐",
+    lines:["人闲桂花落","夜静春山空","月出惊山鸟","时鸣春涧中"],
+    desc:"以月出鸟鸣衬托出春山夜晚的幽静，充满禅意与自然之美" },
+  { title:"出塞", author:"王昌龄", dynasty:"唐",
+    lines:["秦时明月汉时关","万里长征人未还","但使龙城飞将在","不教胡马度阴山"],
+    desc:"借边关月色抒发对戍边将士的同情，寄托了渴望良将镇边的爱国情怀" },
+  { title:"凉州词", author:"王翰", dynasty:"唐",
+    lines:["葡萄美酒夜光杯","欲饮琵琶马上催","醉卧沙场君莫笑","古来征战几人回"],
+    desc:"描写出征前夜痛饮美酒的场面，以豪迈姿态面对生死，悲壮中见豁达" },
+  { title:"回乡偶书", author:"贺知章", dynasty:"唐",
+    lines:["少小离家老大回","乡音无改鬓毛衰","儿童相见不相识","笑问客从何处来"],
+    desc:"描写诗人晚年归乡，物是人非，儿童不识，感叹岁月流逝、时光不再" },
+  { title:"题西林壁", author:"苏轼", dynasty:"宋",
+    lines:["横看成岭侧成峰","远近高低各不同","不识庐山真面目","只缘身在此山中"],
+    desc:"借观察庐山的不同视角，阐述了当局者迷、旁观者清的深刻哲理" },
+  { title:"饮湖上初晴后雨", author:"苏轼", dynasty:"宋",
+    lines:["水光潋滟晴方好","山色空蒙雨亦奇","欲把西湖比西子","淡妆浓抹总相宜"],
+    desc:"将西湖晴雨两种景色比作西施淡妆浓抹，皆是别样风情" },
+  { title:"梅花", author:"王安石", dynasty:"宋",
+    lines:["墙角数枝梅","凌寒独自开","遥知不是雪","为有暗香来"],
+    desc:"以凌寒独放的梅花象征高洁坚贞的品格，托物言志，意境幽远" },
+  { title:"示儿", author:"陆游", dynasty:"宋",
+    lines:["死去元知万事空","但悲不见九州同","王师北定中原日","家祭无忘告乃翁"],
+    desc:"陆游临终绝笔，念念不忘国家统一，嘱咐子孙收复中原后告知自己" },
+  { title:"小池", author:"杨万里", dynasty:"宋",
+    lines:["泉眼无声惜细流","树阴照水爱晴柔","小荷才露尖尖角","早有蜻蜓立上头"],
+    desc:"描写初夏小池美景，小荷初露、蜻蜓先来，生动活泼，充满童趣" },
+  { title:"晓出净慈寺送林子方", author:"杨万里", dynasty:"宋",
+    lines:["毕竟西湖六月中","风光不与四时同","接天莲叶无穷碧","映日荷花别样红"],
+    desc:"以六月西湖接天碧莲、映日红荷的壮丽景象，烘托出别样的送别情怀" },
+  { title:"春日", author:"朱熹", dynasty:"宋",
+    lines:["胜日寻芳泗水滨","无边光景一时新","等闲识得东风面","万紫千红总是春"],
+    desc:"借春日寻芳之景，寓意理学新气象，万紫千红皆为春风所化育" },
+  { title:"游园不值", author:"叶绍翁", dynasty:"宋",
+    lines:["应怜屐齿印苍苔","小扣柴扉久不开","春色满园关不住","一枝红杏出墙来"],
+    desc:"游园叩门无人应，却见一枝红杏伸出墙外，以小见大，感受春意盎然" },
+  { title:"咏柳", author:"贺知章", dynasty:"唐",
+    lines:["碧玉妆成一树高","万条垂下绿丝绦","不知细叶谁裁出","二月春风似剪刀"],
+    desc:"以碧玉和剪刀比喻柳树与春风，描绘了早春柳树婀娜多姿的美丽" },
+  { title:"望洞庭", author:"刘禹锡", dynasty:"唐",
+    lines:["湖光秋月两相和","潭面无风镜未磨","遥望洞庭山水翠","白银盘里一青螺"],
+    desc:"以白银盘中青螺比喻月色下的洞庭湖与君山，描绘出清冷柔和的秋日夜景" },
+  { title:"乌衣巷", author:"刘禹锡", dynasty:"唐",
+    lines:["朱雀桥边野草花","乌衣巷口夕阳斜","旧时王谢堂前燕","飞入寻常百姓家"],
+    desc:"通过旧燕飞入寻常百姓家，感叹昔日豪门今已没落，表达了历史沧桑之感" },
+  { title:"己亥杂诗", author:"龚自珍", dynasty:"清",
+    lines:["浩荡离愁白日斜","吟鞭东指即天涯","落红不是无情物","化作春泥更护花"],
+    desc:"以落花化为春泥护花自比，表达了诗人虽辞官离京仍甘愿奉献的情怀" },
+  { title:"竹石", author:"郑燮", dynasty:"清",
+    lines:["咬定青山不放松","立根原在破岩中","千磨万击还坚劲","任尔东西南北风"],
+    desc:"以竹子咬定青山、坚韧不屈，象征不随世俗、坚守气节的品格" },
+  { title:"石灰吟", author:"于谦", dynasty:"明",
+    lines:["千锤万凿出深山","烈火焚烧若等闲","粉骨碎身浑不怕","要留清白在人间"],
+    desc:"借石灰历经千锤百炼仍保持清白，表达了诗人不畏艰险、廉洁正直的志向" },
+  { title:"所见", author:"袁枚", dynasty:"清",
+    lines:["牧童骑黄牛","歌声振林樾","意欲捕鸣蝉","忽然闭口立"],
+    desc:"描写牧童骑牛高歌、突然停声欲捕鸣蝉的有趣场景，充满天真童趣" },
+  { title:"村居", author:"高鼎", dynasty:"清",
+    lines:["草长莺飞二月天","拂堤杨柳醉春烟","儿童散学归来早","忙趁东风放纸鸢"],
+    desc:"描写早春乡村草长莺飞的美景与儿童散学后欢快放风筝的生动画面" },
+  { title:"宿新市徐公店", author:"杨万里", dynasty:"宋",
+    lines:["篱落疏疏一径深","树头花落未成阴","儿童急走追黄蝶","飞入菜花无处寻"],
+    desc:"描写暮春篱边小径，儿童追蝶、蝴蝶消失于菜花中的趣味盎然场景" },
+  { title:"夏日绝句", author:"李清照", dynasty:"宋",
+    lines:["生当作人杰","死亦为鬼雄","至今思项羽","不肯过江东"],
+    desc:"借赞颂项羽宁死不屈的气节，讽刺南宋统治者偏安一隅的懦弱行为" },
+  { title:"望岳", author:"杜甫", dynasty:"唐",
+    lines:["岱宗夫如何","齐鲁青未了","造化钟神秀","阴阳割昏晓","荡胸生曾云","决眦入归鸟","会当凌绝顶","一览众山小"],
+    desc:"描写泰山巍峨神秀，以「会当凌绝顶，一览众山小」抒发昂扬向上的豪情" },
+  { title:"送杜少府之任蜀州", author:"王勃", dynasty:"唐",
+    lines:["城阙辅三秦","风烟望五津","与君离别意","同是宦游人","海内存知己","天涯若比邻","无为在歧路","儿女共沾巾"],
+    desc:"以豁达的胸怀写送别，「海内存知己，天涯若比邻」表达了真挚友情超越空间阻隔" },
+  { title:"浪淘沙", author:"刘禹锡", dynasty:"唐",
+    lines:["九曲黄河万里沙","浪淘风簸自天涯","如今直上银河去","同到牵牛织女家"],
+    desc:"以黄河的浩荡奔腾为引，展开顺流直上银河的浪漫联想，豪气冲天" },
+  { title:"秋夜将晓出篱门迎凉有感", author:"陆游", dynasty:"宋",
+    lines:["三万里河东入海","五千仞岳上摩天","遗民泪尽胡尘里","南望王师又一年"],
+    desc:"描写北方沦陷区百姓翘首盼望王师归来、年年失望的悲凉处境" },
+  { title:"江南", author:"佚名", dynasty:"汉",
+    lines:["江南可采莲","莲叶何田田","鱼戏莲叶间","鱼戏莲叶东","鱼戏莲叶西","鱼戏莲叶南","鱼戏莲叶北"],
+    desc:"描写江南水乡采莲的美景，以鱼儿戏水莲叶间的生动画面，展现了生机盎然的江南风光" },
+  { title:"风", author:"李峤", dynasty:"唐",
+    lines:["解落三秋叶","能开二月花","过江千尺浪","入竹万竿斜"],
+    desc:"以描绘风的力量与作用，赞美风无形却能开花落叶、掀浪折竹的神奇力量" },
+  { title:"长歌行", author:"佚名", dynasty:"汉",
+    lines:["青青园中葵","朝露待日晞","阳春布德泽","万物生光辉","常恐秋节至","焜黄华叶衰","百川东到海","何时复西归","少壮不努力","老大徒伤悲"],
+    desc:"以园中葵草和百川东流为喻，劝诫人们趁年少努力，莫待老大空悲叹" },
+  { title:"敕勒歌", author:"佚名", dynasty:"北朝",
+    lines:["敕勒川","阴山下","天似穹庐","笼盖四野","天苍苍","野茫茫","风吹草低见牛羊"],
+    desc:"描写北方草原天高地阔、风吹草低见牛羊的壮阔景象，气势雄浑" },
+  { title:"咏鹅", author:"骆宾王", dynasty:"唐",
+    lines:["鹅鹅鹅","曲项向天歌","白毛浮绿水","红掌拨清波"],
+    desc:"描写鹅在水中游弋的姿态，以白毛、红掌与绿水相映，画面生动活泼" },
+  { title:"凉州词", author:"王之涣", dynasty:"唐",
+    lines:["黄河远上白云间","一片孤城万仞山","羌笛何须怨杨柳","春风不度玉门关"],
+    desc:"描写边塞孤城万仞、春风不度的荒凉，羌笛哀怨中透出戍边将士的悲苦情怀" },
+  { title:"芙蓉楼送辛渐", author:"王昌龄", dynasty:"唐",
+    lines:["寒雨连江夜入吴","平明送客楚山孤","洛阳亲友如相问","一片冰心在玉壶"],
+    desc:"以一片冰心在玉壶表明高洁品格，情深意切地抒发了对友人的惜别之情" },
+  { title:"鹿柴", author:"王维", dynasty:"唐",
+    lines:["空山不见人","但闻人语响","返景入深林","复照青苔上"],
+    desc:"以空山人语、返照青苔描绘深林幽静，展现禅意盎然、以动衬静的山林意境" },
+  { title:"送元二使安西", author:"王维", dynasty:"唐",
+    lines:["渭城朝雨浥轻尘","客舍青青柳色新","劝君更尽一杯酒","西出阳关无故人"],
+    desc:"以渭城细雨、柳色新绿衬托离别，劝君尽杯酒，情深义重地送别友人出使安西" },
+  { title:"黄鹤楼送孟浩然之广陵", author:"李白", dynasty:"唐",
+    lines:["故人西辞黄鹤楼","烟花三月下扬州","孤帆远影碧空尽","唯见长江天际流"],
+    desc:"描写诗人在黄鹤楼送别好友孟浩然东去扬州，以孤帆消逝、长江天际表达深切的依依惜别之情" },
+  { title:"古朗月行（节选）", author:"李白", dynasty:"唐",
+    lines:["小时不识月","呼作白玉盘","又疑瑶台镜","飞在青云端"],
+    desc:"以儿童的视角将月亮比作白玉盘、瑶台镜，充满奇妙的想象与天真烂漫的童趣" },
+  { title:"别董大", author:"高适", dynasty:"唐",
+    lines:["千里黄云白日曛","北风吹雁雪纷纷","莫愁前路无知己","天下谁人不识君"],
+    desc:"以苍茫天地、北风雪雁的荒凉背景，反衬出「天下谁人不识君」的豪迈送别之情" },
+  { title:"滁州西涧", author:"韦应物", dynasty:"唐",
+    lines:["独怜幽草涧边生","上有黄鹂深树鸣","春潮带雨晚来急","野渡无人舟自横"],
+    desc:"描写滁州西涧春日幽草、黄鹂、春潮、野渡的宁静画面，以无人野渡舟自横烘托闲适淡泊之情" },
+  { title:"游子吟", author:"孟郊", dynasty:"唐",
+    lines:["慈母手中线","游子身上衣","临行密密缝","意恐迟迟归","谁言寸草心","报得三春晖"],
+    desc:"以慈母为游子缝衣的细腻动作，抒发了子女对母亲深恩难以回报的真挚感恩之情" },
+  { title:"江畔独步寻花", author:"杜甫", dynasty:"唐",
+    lines:["黄四娘家花满蹊","千朵万朵压枝低","留连戏蝶时时舞","自在娇莺恰恰啼"],
+    desc:"描写江边春日花团锦簇、蝴蝶留连、娇莺啼鸣的生动景象，表达了诗人对春色的喜爱" },
+  { title:"早春呈水部张十八员外", author:"韩愈", dynasty:"唐",
+    lines:["天街小雨润如酥","草色遥看近却无","最是一年春好处","绝胜烟柳满皇都"],
+    desc:"以早春细雨润物、草色若有若无的朦胧美，道出初春胜过烟柳满城的独特韵味" },
+  { title:"渔歌子", author:"张志和", dynasty:"唐",
+    lines:["西塞山前白鹭飞","桃花流水鳜鱼肥","青箬笠","绿蓑衣","斜风细雨不须归"],
+    desc:"描写西塞山前白鹭、桃花、流水、鳜鱼的春江美景，表达渔人悠然自得、不愿归去的隐逸情怀" },
+  { title:"赋得古原草送别", author:"白居易", dynasty:"唐",
+    lines:["离离原上草","一岁一枯荣","野火烧不尽","春风吹又生","远芳侵古道","晴翠接荒城","又送王孙去","萋萋满别情"],
+    desc:"借古原野草岁岁枯荣、野火烧不尽的顽强生命力，寄寓送别友人时绵绵不尽的离情别绪" },
+  { title:"塞下曲", author:"卢纶", dynasty:"唐",
+    lines:["月黑雁飞高","单于夜遁逃","欲将轻骑逐","大雪满弓刀"],
+    desc:"描写月黑雁飞之夜将士轻骑追敌的紧张场面，以大雪满弓刀烘托边塞战场的壮烈气氛" },
+  { title:"池上", author:"白居易", dynasty:"唐",
+    lines:["小娃撑小艇","偷采白莲回","不解藏踪迹","浮萍一道开"],
+    desc:"描写小孩撑船偷采白莲、却不知浮萍已泄露行踪的有趣场景，童趣盎然，天真可爱" },
+  { title:"忆江南", author:"白居易", dynasty:"唐",
+    lines:["江南好","风景旧曾谙","日出江花红胜火","春来江水绿如蓝","能不忆江南"],
+    desc:"以江南春景的明艳色彩，表达了诗人对江南风光的深深怀念与热爱之情" },
+  { title:"小儿垂钓", author:"胡令能", dynasty:"唐",
+    lines:["蓬头稚子学垂纶","侧坐莓苔草映身","路人借问遥招手","怕得鱼惊不应人"],
+    desc:"描写蓬头稚童学钓鱼的有趣情景，怕惊鱼而不敢应答路人，童趣天真可爱" },
+  { title:"清明", author:"杜牧", dynasty:"唐",
+    lines:["清明时节雨纷纷","路上行人欲断魂","借问酒家何处有","牧童遥指杏花村"],
+    desc:"描写清明时节细雨纷飞、行人断魂的凄迷景象，以问路寻酒增添生活气息" },
+  { title:"江南春", author:"杜牧", dynasty:"唐",
+    lines:["千里莺啼绿映红","水村山郭酒旗风","南朝四百八十寺","多少楼台烟雨中"],
+    desc:"以千里江南莺啼红绿的春色与南朝烟雨古寺，勾勒出江南春日的迷人风光与历史沧桑" },
+  { title:"寻隐者不遇", author:"贾岛", dynasty:"唐",
+    lines:["松下问童子","言师采药去","只在此山中","云深不知处"],
+    desc:"以问答形式描写寻访隐者而不遇的情景，表达了对隐逸生活的向往与淡淡的惆怅" },
+  { title:"蜂", author:"罗隐", dynasty:"唐",
+    lines:["不论平地与山尖","无限风光尽被占","采得百花成蜜后","为谁辛苦为谁甜"],
+    desc:"借蜜蜂采花酿蜜却不得享受的命运，讽喻劳动者辛苦而成果被他人占有的社会现实" },
+  { title:"江上渔者", author:"范仲淹", dynasty:"宋",
+    lines:["江上往来人","但爱鲈鱼美","君看一叶舟","出没风波里"],
+    desc:"以江上往来人只知鲈鱼美味，却不见渔民风波中讨生活的艰辛，寄寓对劳动者的同情" },
+  { title:"元日", author:"王安石", dynasty:"宋",
+    lines:["爆竹声中一岁除","春风送暖入屠苏","千门万户曈曈日","总把新桃换旧符"],
+    desc:"描写新年喜庆气象，以爆竹、春风、曈曈日、新桃旧符展现除旧迎新的欢乐场景" },
+  { title:"六月二十七日望湖楼醉书", author:"苏轼", dynasty:"宋",
+    lines:["黑云翻墨未遮山","白雨跳珠乱入船","卷地风来忽吹散","望湖楼下水如天"],
+    desc:"描写西湖夏日骤雨骤晴的壮观景象，以墨云、跳珠、狂风、水天展现大自然的变幻之美" },
+  { title:"泊船瓜洲", author:"王安石", dynasty:"宋",
+    lines:["京口瓜洲一水间","钟山只隔数重山","春风又绿江南岸","明月何时照我还"],
+    desc:"以春风又绿江南岸的清新景象，表达了诗人思乡念归的深切情感" },
+  { title:"书湖阴先生壁", author:"王安石", dynasty:"宋",
+    lines:["茅檐长扫净无苔","花木成畦手自栽","一水护田将绿绕","两山排闼送青来"],
+    desc:"描写湖阴先生庭院的清幽雅洁，以山水拟人化手法展现田园生活的恬静之美" },
+  { title:"惠崇春江晚景", author:"苏轼", dynasty:"宋",
+    lines:["竹外桃花三两枝","春江水暖鸭先知","蒌蒿满地芦芽短","正是河豚欲上时"],
+    desc:"为惠崇所画春江晚景题诗，以桃花、春江、鸭群、蒌蒿描绘早春江南的勃勃生机" },
+  { title:"四时田园杂兴（其二十五）", author:"范成大", dynasty:"宋",
+    lines:["梅子金黄杏子肥","麦花雪白菜花稀","日长篱落无人过","惟有蜻蜓蛱蝶飞"],
+    desc:"描写初夏田园风光，梅黄杏肥、麦白菜稀，篱落寂静唯蜻蜓蝴蝶纷飞，宁静闲适" },
+  { title:"四时田园杂兴（其三十一）", author:"范成大", dynasty:"宋",
+    lines:["昼出耘田夜绩麻","村庄儿女各当家","童孙未解供耕织","也傍桑阴学种瓜"],
+    desc:"描写农家男女日夜劳作，儿童也在桑树下学种瓜，展现淳朴勤劳的乡村生活" },
+  { title:"三衢道中", author:"曾几", dynasty:"宋",
+    lines:["梅子黄时日日晴","小溪泛尽却山行","绿阴不减来时路","添得黄鹂四五声"],
+    desc:"描写梅雨季节难得的晴日出游，绿阴依旧、黄鹂啼鸣，表达了诗人愉快的旅途心情" },
+  { title:"乡村四月", author:"翁卷", dynasty:"宋",
+    lines:["绿遍山原白满川","子规声里雨如烟","乡村四月闲人少","才了蚕桑又插田"],
+    desc:"描写江南四月乡村忙碌的农耕景象，绿野白水、子规声里，农人才忙完蚕桑又插田" },
+  { title:"观书有感", author:"朱熹", dynasty:"宋",
+    lines:["半亩方塘一鉴开","天光云影共徘徊","问渠那得清如许","为有源头活水来"],
+    desc:"以方塘清澈比喻读书明理，「源头活水」寓意不断学习才能保持思想清新" },
+  { title:"墨梅", author:"王冕", dynasty:"元",
+    lines:["吾家洗砚池头树","个个花开淡墨痕","不要人夸好颜色","只流清气满乾坤"],
+    desc:"借墨梅不求颜色艳丽、只留清气满天地，表达了诗人淡泊名利、高洁自守的品格" },
+  { title:"题临安邸", author:"林升", dynasty:"宋",
+    lines:["山外青山楼外楼","西湖歌舞几时休","暖风熏得游人醉","直把杭州作汴州"],
+    desc:"讽刺南宋统治者不思收复失地、沉迷歌舞升平，将临时都城杭州当作故都汴州" }
+];
+
+// ================================
+//  CONSTANTS
+// ================================
+const TOTAL_Q = 20;
+const TIME_SEC = 8 * 60;
+
+// ================================
+//  GAME STATE
+// ================================
+let gs = {};
+
+// ================================
+//  HELPERS
+// ================================
+function randInt(n) { return Math.floor(Math.random() * n); }
+function pick(arr) { return arr[randInt(arr.length)]; }
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = randInt(i + 1); [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getWrongLines(correctLine, count) {
+  const len = correctLine.length;
+  let pool = shuffle(POEMS.flatMap(p => p.lines)
+    .filter(l => l !== correctLine && Math.abs(l.length - len) <= 2));
+  const seen = new Set([correctLine]);
+  const result = [];
+  for (const l of pool) {
+    if (!seen.has(l)) { seen.add(l); result.push(l); }
+    if (result.length >= count) break;
+  }
+  // fallback with different length lines
+  if (result.length < count) {
+    const fallback = shuffle(POEMS.flatMap(p => p.lines).filter(l => !seen.has(l)));
+    for (const l of fallback) {
+      if (!seen.has(l)) { seen.add(l); result.push(l); }
+      if (result.length >= count) break;
+    }
+  }
+  return result.slice(0, count);
+}
+
+function pickFresh(usedSet) {
+  const pool = POEMS.filter(p => !usedSet.has(p.title));
+  const poem = pick(pool.length >= 2 ? pool : POEMS);
+  usedSet.add(poem.title);
+  return poem;
+}
+
+// ================================
+//  QUESTION GENERATORS
+// ================================
+
+// Confusion map for generating plausible wrong options
+const CONFUSION_MAP = {
+  '向':'像,想,香,响,巷,象,项', '像':'向,想,香,象,相', '想':'向,像,香,响,箱',
+  '明':'名,鸣,铭,茗,冥', '月':'曰,悦,玥,越,阅', '思':'丝,斯,私,司,死',
+  '故':'顾,固,古,孤,估', '乡':'香,相,箱,详,祥', '春':'纯,唇,醇,淳,椿',
+  '花':'华,化,画,划,话', '风':'丰,封,枫,锋,蜂,疯', '雨':'宇,羽,语,予,禹',
+  '山':'衫,珊,杉,删,煽', '水':'睡,谁,瑞,税,碎', '云':'匀,韵,运,陨,蕴',
+  '天':'田,添,甜,填,恬', '日':'入,辱,如,乳,汝', '人':'仁,忍,任,认,刃',
+  '白':'百,柏,拍,迫,伯', '红':'宏,虹,洪,鸿,弘', '绿':'录,路,露,鹿,陆',
+  '青':'清,轻,情,晴,请', '空':'孔,控,恐,倥,崆', '深':'身,神,沈,审,慎',
+  '长':'常,场,尝,偿,昌', '远':'院,愿,怨,圆,园', '高':'告,稿,搞,糕,膏',
+  '低':'底,地,第,弟,帝', '头':'投,偷,透,土,途', '望':'忘,旺,往,王,亡',
+  '举':'据,句,具,巨,居', '床':'窗,创,闯,疮,幢', '前':'钱,浅,千,迁,签',
+  '光':'广,逛,旷,况,矿', '疑':'宜,仪,移,遗,椅', '地':'弟,帝,递,第,底',
+  '上':'尚,伤,赏,裳,商', '霜':'双,爽,霰,衰,帅', '鹅':'额,恶,饿,俄,娥',
+  '曲':'区,趣,取,去,驱', '项':'向,想,象,巷,相', '歌':'哥,阁,格,个,各',
+  '浮':'扶,福,服,伏,夫', '拨':'波,泊,博,伯,搏', '清':'青,轻,情,晴,请',
+  '知':'之,只,芝,枝,织', '多':'朵,夺,躲,惰,堕', '少':'烧,稍,哨,梢,捎',
+  '无':'吴,五,午,武,舞', '有':'又,友,右,幼,佑', '不':'布,步,部,补,捕',
+  '来':'莱,赖,睐,徕,籁', '去':'取,趣,区,曲,驱', '生':'声,升,胜,圣,省',
+  '落':'洛,骆,络,烙,珞', '飞':'非,菲,肥,匪,废', '入':'如,乳,辱,汝,儒',
+  '出':'初,处,除,楚,础', '开':'凯,揩,慨,楷,铠', '关':'观,官,管,馆,冠',
+  '尽':'进,近,金,今,仅', '穷':'琼,穹,邛,筇,銎', '更':'耕,庚,羹,梗,哽',
+  '一':'衣,依,医,意,忆', '二':'耳,尔,而,儿,饵', '三':'散,伞,叁,杉,衫',
+  '四':'似,死,寺,丝,私', '五':'午,吴,武,舞,务', '千':'签,牵,谦,迁,钱',
+  '万':'湾,弯,腕,碗,挽', '百':'柏,拍,伯,迫,魄',
+  '大':'达,答,搭,打,代', '小':'笑,晓,孝,效,校', '里':'理,李,礼,力,立',
+  '中':'钟,终,忠,衷,肿', '间':'简,建,见,件,剑', '下':'夏,吓,暇,瑕,虾',
+  '南':'男,难,楠,喃,囡', '北':'备,被,背,贝,倍', '东':'冬,动,冻,洞,栋', '西':'夕,惜,息,溪,稀',
+};
+
+function getConfusionOptions(correctText) {
+  const results = new Set();
+  if (correctText.length === 1) {
+    // single char: use confusion map + random chars
+    const confusions = CONFUSION_MAP[correctText];
+    if (confusions) {
+      const arr = shuffle(confusions.split(','));
+      arr.forEach(c => results.add(c));
+    }
+    // add random chars from poems
+    const allChars = shuffle([...new Set(
+      POEMS.flatMap(p => p.lines.join('').split(''))
+        .filter(c => c !== correctText && !results.has(c) && /[\u4e00-\u9fa5]/.test(c))
+    )]);
+    allChars.forEach(c => results.add(c));
+  } else {
+    // multi-char: replace one char with a confusion char
+    const chars = correctText.split('');
+    for (let attempt = 0; attempt < 30 && results.size < 6; attempt++) {
+      const pos = randInt(chars.length);
+      const orig = chars[pos];
+      const confusions = CONFUSION_MAP[orig];
+      let replacement;
+      if (confusions) {
+        const arr = confusions.split(',');
+        replacement = pick(arr);
+      } else {
+        const pool = [...new Set(POEMS.flatMap(p => p.lines.join('').split(''))
+          .filter(c => c !== orig && /[\u4e00-\u9fa5]/.test(c)))];
+        replacement = pick(pool);
+      }
+      const newText = chars.map((c, i) => i === pos ? replacement : c).join('');
+      if (newText !== correctText) results.add(newText);
+    }
+  }
+  return [...results];
+}
+
+function makeQ2(usedSet) {
+  const poem = pickFresh(usedSet);
+  // pick one line
+  const lineIdx = randInt(poem.lines.length);
+  const line = poem.lines[lineIdx];
+  const lineChars = line.split('');
+  // decide blank length: 1 or 2 chars
+  const blankLen = (lineChars.length >= 4 && Math.random() < 0.4) ? 2 : 1;
+  const maxStart = lineChars.length - blankLen;
+  const blankStart = randInt(maxStart + 1);
+  const correctText = lineChars.slice(blankStart, blankStart + blankLen).join('');
+  // build display: replace blanked chars with underscores
+  const displayLine = lineChars.map((c, i) => (i >= blankStart && i < blankStart + blankLen) ? '_' : c).join('');
+  // generate ABCD options
+  const wrongOptions = getConfusionOptions(correctText).filter(o => o !== correctText).slice(0, 3);
+  // ensure we have exactly 3 wrong options
+  while (wrongOptions.length < 3) {
+    const fallback = lineChars.length >= 2
+      ? lineChars.slice(0, blankLen).join('')
+      : '诗';
+    const rand = shuffle([...new Set(POEMS.flatMap(p => p.lines.join('').split(''))
+      .filter(c => /[\u4e00-\u9fa5]/.test(c)))]);
+    for (const c of rand) {
+      const candidate = blankLen === 1 ? c : c + pick(rand);
+      if (candidate !== correctText && !wrongOptions.includes(candidate)) {
+        wrongOptions.push(candidate);
+        if (wrongOptions.length >= 3) break;
+      }
+    }
+  }
+  const options = shuffle([correctText, ...wrongOptions.slice(0, 3)]);
+  const labels = ['A', 'B', 'C', 'D'];
+  const correctLabel = labels[options.indexOf(correctText)];
+  // also show context: the other line(s)
+  const contextLines = poem.lines.filter((_, i) => i !== lineIdx).slice(0, 2);
+  return {
+    type: 2, poem, line, displayLine, blankStart, blankLen,
+    correctText, options, labels, correctLabel,
+    contextLines, userAnswer: null
+  };
+}
+
+
+// Type 5: statement-based true/false (诗词判断)
+// Generates varied natural-language statements about poems
+function makeQ5(usedSet) {
+  const poem = pickFresh(usedSet);
+  const isCorrect = Math.random() < 0.5;
+  // Pick a random statement template
+  const templateIdx = randInt(5);
+  let statement = '';
+  let actualCorrect = isCorrect;
+
+  if (templateIdx === 0) {
+    // "XX，YY 出自ZZ的《WW》？"  — author attribution
+    const lines = poem.lines.slice(0, 2);
+    const linesText = lines.join('，');
+    if (isCorrect) {
+      statement = linesText + ' 出自' + poem.author + '的《' + poem.title + '》？';
+    } else {
+      const wrongPoem = pick(POEMS.filter(p => p.author !== poem.author));
+      statement = linesText + ' 出自' + wrongPoem.author + '的《' + poem.title + '》？';
+    }
+  } else if (templateIdx === 1) {
+    // "《WW》是朝代ZZ诗人AA的作品？"
+    if (isCorrect) {
+      statement = '《' + poem.title + '》是' + poem.dynasty + '代' + poem.author + '的作品？';
+    } else {
+      const wrongAuthor = pick([...new Set(POEMS.filter(p => p.author !== poem.author).map(p => p.author))]);
+      statement = '《' + poem.title + '》是' + poem.dynasty + '代' + wrongAuthor + '的作品？';
+    }
+  } else if (templateIdx === 2) {
+    // "XX，YY 的下一句是 ZZ？"  — next line check
+    if (poem.lines.length >= 2) {
+      const lineIdx = randInt(poem.lines.length - 1);
+      const currentLine = poem.lines[lineIdx];
+      const nextLine = poem.lines[lineIdx + 1];
+      if (isCorrect) {
+        statement = '「' + currentLine + '」的下一句是「' + nextLine + '」？';
+      } else {
+        const wrongLines = POEMS.flatMap(p => p.lines).filter(l => l !== nextLine && l !== currentLine);
+        const wrongNext = pick(wrongLines);
+        statement = '「' + currentLine + '」的下一句是「' + wrongNext + '」？';
+      }
+    } else {
+      // fallback to author check
+      if (isCorrect) {
+        statement = '「' + poem.lines[0] + '」出自' + poem.author + '之手？';
+      } else {
+        const wrongAuthor = pick([...new Set(POEMS.filter(p => p.author !== poem.author).map(p => p.author))]);
+        statement = '「' + poem.lines[0] + '」出自' + wrongAuthor + '之手？';
+      }
+    }
+  } else if (templateIdx === 3) {
+    // "XX，YY 是诗人AA对ZZ的描述？" — desc/subject check
+    const linesText = poem.lines.slice(0, 2).join('，');
+    // Extract a keyword from poem desc for the "subject"
+    const descKeywords = {
+      '咏鹅':'鹅', '咏柳':'柳树', '梅花':'梅花', '竹石':'竹子', '蜂':'蜜蜂',
+      '风':'风', '江雪':'独钓雪景', '石灰吟':'石灰', '墨梅':'墨梅',
+      '池上':'小孩偷莲', '小儿垂钓':'小孩钓鱼', '所见':'牧童',
+      '村居':'乡村春景', '春晓':'春天早晨', '静夜思':'思乡',
+      '悯农（其一）':'农民辛苦', '悯农（其二）':'农民劳作',
+      '游子吟':'母爱', '清明':'清明时节', '敕勒歌':'草原风光',
+    };
+    const subject = descKeywords[poem.title] || '此景此情';
+    if (isCorrect) {
+      statement = linesText + '，是诗人' + poem.author + '对' + subject + '的描述？';
+    } else {
+      const wrongAuthor = pick([...new Set(POEMS.filter(p => p.author !== poem.author).map(p => p.author))]);
+      statement = linesText + '，是诗人' + wrongAuthor + '对' + subject + '的描述？';
+    }
+  } else {
+    // "《WW》描写的是ZZ？"  — desc meaning check
+    if (isCorrect) {
+      statement = '《' + poem.title + '》' + poem.desc.slice(0, 20) + '……？';
+    } else {
+      const wrongPoem = pick(POEMS.filter(p => p.title !== poem.title));
+      statement = '《' + poem.title + '》' + wrongPoem.desc.slice(0, 20) + '……？';
+    }
+  }
+
+  return { type: 5, poem, statement, isActuallyCorrect: actualCorrect, userAnswer: null };
+}
+
+// Type 6: pick chars to compose a poem line (选词组诗)
+function makeQ6(usedSet) {
+  const poem = pickFresh(usedSet);
+  // prefer 5 or 7 char lines
+  const eligible = poem.lines.filter(l => l.length === 5 || l.length === 7);
+  const line = pick(eligible.length ? eligible : poem.lines);
+  const lineLen = line.length;
+  const correctChars = line.split('');
+  // Grid: for 5-char line use 3x3=9 cells, for 7-char line use 3x4=12 cells
+  const gridTotal = lineLen === 5 ? 9 : 12;
+  const fillerCount = gridTotal - lineLen;
+  // Pick filler chars (random chars from other poems, not in the correct line)
+  const allPoetryChars = [...new Set(
+    POEMS.flatMap(p => p.lines.join('').split(''))
+      .filter(c => !correctChars.includes(c) && /[\u4e00-\u9fa5]/.test(c))
+  )];
+  const fillers = shuffle(allPoetryChars).slice(0, fillerCount);
+  const gridChars = shuffle([...correctChars, ...fillers]);
+  const gridCols = lineLen === 5 ? 3 : 4;
+  return {
+    type: 6, poem, line, correctChars, lineLen,
+    gridChars, gridCols, gridTotal,
+    selectedIndices: [],   // array of grid indices user picked in order
+    userAnswer: null
+  };
+}
+
+function generateQuestions(mode) {
+  const used = new Set();
+  let types;
+  if (mode === 0) {
+    // mixed: ~7 of each type, total 20
+    types = shuffle([2,2,2,2,2,2,2, 5,5,5,5,5,5, 6,6,6,6,6,6,6]).slice(0, 20);
+  } else {
+    types = Array(20).fill(mode);
+  }
+  return types.map(t => {
+    if (t === 2) return makeQ2(used);
+    if (t === 5) return makeQ5(used);
+    return makeQ6(used);
+  });
+}
+
+// ================================
+//  TIMER
+// ================================
+function startTimer() {
+  gs.timer = setInterval(() => {
+    gs.timeLeft--;
+    updateTimerDisplay();
+    if (gs.timeLeft <= 0) { clearInterval(gs.timer); gs.timer = null; timeUp(); }
+  }, 1000);
+}
+
+function stopTimer() { if (gs.timer) { clearInterval(gs.timer); gs.timer = null; } }
+
+function updateTimerDisplay() {
+  const m = Math.floor(gs.timeLeft / 60);
+  const s = gs.timeLeft % 60;
+  const el = document.getElementById('timer-text');
+  const box = document.getElementById('timer-box');
+  if (!el) return;
+  el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  if (gs.timeLeft <= 60) box.classList.add('warning');
+  else box.classList.remove('warning');
+}
+
+// ================================
+//  SCREENS
+// ================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ================================
+//  GAME FLOW
+// ================================
+function startGame(mode) {
+  mode = (mode === undefined) ? 0 : mode;
+  gs = {
+    mode,
+    questions: generateQuestions(mode),
+    idx: 0, timeLeft: TIME_SEC, timer: null,
+    submitted: false, startTime: Date.now()
+  };
+  showScreen('screen-game');
+  buildDots();
+  renderQuestion(0);
+  updateNavButtons();
+  updateAnsweredCount();
+  startTimer();
+}
+
+function goQuestion(delta) {
+  const newIdx = gs.idx + delta;
+  if (newIdx < 0 || newIdx >= TOTAL_Q) return;
+  gs.idx = newIdx;
+  renderQuestion(newIdx);
+  updateNavButtons();
+}
+
+function goToQuestion(idx) {
+  gs.idx = idx;
+  renderQuestion(idx);
+  updateNavButtons();
+}
+
+function recordAnswer() {
+  updateDot(gs.idx);
+  updateAnsweredCount();
+  setTimeout(() => { if (gs.idx < TOTAL_Q - 1) goQuestion(1); }, 550);
+}
+
+function confirmSubmit() {
+  if (gs.submitted) return;
+  const unanswered = gs.questions.filter(q => q.userAnswer === null).length;
+  if (unanswered > 0) {
+    if (!confirm('还有 ' + unanswered + ' 题未作答，确定提交并查看全部正误吗？')) return;
+  }
+  doSubmit();
+}
+
+function timeUp() {
+  alert('时间到！即将显示答题结果。');
+  doSubmit();
+}
+
+function doSubmit() {
+  if (gs.submitted) return;
+  gs.submitted = true;
+  stopTimer();
+  gs.elapsed = Math.round((Date.now() - gs.startTime) / 1000);
+  showResults();
+}
+
+// ================================
+//  DOTS
+// ================================
+function buildDots() {
+  const nav = document.getElementById('dot-nav');
+  nav.innerHTML = '';
+  for (let i = 0; i < TOTAL_Q; i++) {
+    const d = document.createElement('div');
+    d.className = 'q-dot' + (i === 0 ? ' active' : '');
+    d.textContent = i + 1;
+    const ci = i;
+    d.addEventListener('click', () => goToQuestion(ci));
+    nav.appendChild(d);
+  }
+}
+
+function updateDot(activeIdx) {
+  const dots = document.querySelectorAll('.q-dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('active', i === gs.idx);
+    d.classList.toggle('answered', gs.questions[i] && gs.questions[i].userAnswer !== null);
+  });
+}
+
+function updateNavButtons() {
+  document.getElementById('btn-prev').disabled = gs.idx === 0;
+  document.getElementById('btn-next').disabled = gs.idx === TOTAL_Q - 1;
+  document.getElementById('q-counter').textContent = (gs.idx + 1) + ' / ' + TOTAL_Q;
+  updateDot(gs.idx);
+}
+
+function updateAnsweredCount() {
+  const cnt = gs.questions.filter(q => q.userAnswer !== null).length;
+  document.getElementById('answered-count').textContent = '已答 ' + cnt + '/' + TOTAL_Q;
+}
+
+// ================================
+//  RENDERING
+// ================================
+function renderQuestion(idx) {
+  const q = gs.questions[idx];
+  const container = document.getElementById('question-container');
+  let html = '';
+  if (q.type === 2) html = renderQ2(q, idx);
+  else if (q.type === 5) html = renderQ5(q, idx);
+  else html = renderQ6(q, idx);
+  container.innerHTML = '<div class="q-card">' + html + '</div>';
+}
+
+
+function renderQ2(q, idx) {
+  // Show the line with blank(s) as underscores
+  const lineHtml = q.displayLine.split('').map(c => {
+    if (c === '_') return '<span class="fill-blank-char">' + (q.userAnswer ? '' : '＿') + '</span>';
+    return '<span>' + c + '</span>';
+  }).join('');
+  // If answered, show filled version
+  let filledLineHtml = lineHtml;
+  if (q.userAnswer !== null) {
+    const chars = q.line.split('');
+    filledLineHtml = chars.map((c, i) => {
+      if (i >= q.blankStart && i < q.blankStart + q.blankLen) {
+        const isCorrect = q.userAnswer === q.correctText;
+        const cls = isCorrect ? 'fill-blank-char filled' : 'fill-blank-char';
+        const style = isCorrect ? 'color:var(--green);border-bottom-color:var(--green)' : 'color:var(--red);border-bottom-color:var(--red)';
+        // show user's answer chars
+        const answerChars = q.userAnswer.split('');
+        const localIdx = i - q.blankStart;
+        return '<span class="' + cls + '" style="' + style + '">' + (answerChars[localIdx] || '') + '</span>';
+      }
+      return '<span>' + c + '</span>';
+    }).join('');
+  }
+
+  // ABCD options
+  const optionsHtml = q.options.map((opt, oi) => {
+    const label = q.labels[oi];
+    let cls = 'fill-opt-btn';
+    let style = 'width:auto;min-width:60px;padding:8px 16px;font-size:18px;height:auto;';
+    if (q.userAnswer !== null) {
+      if (opt === q.correctText) { cls += ' correct'; }
+      else if (opt === q.userAnswer && opt !== q.correctText) { cls += ' wrong'; }
+    }
+    const dis = q.userAnswer !== null ? 'disabled' : '';
+    return '<button class="' + cls + '" style="' + style + '" ' + dis
+      + ' onclick="selectQ2Option(' + idx + ',\'' + opt + '\')">'
+      + label + '、' + opt + '</button>';
+  }).join('');
+
+  const poemLabel = '《' + q.poem.title + '》—— ' + q.poem.dynasty + ' · ' + q.poem.author;
+  return '<span class="q-type-badge t2">✏️ 选词填空</span>'
+    + '<div class="question-label" style="font-size:12px;margin-bottom:10px">' + poemLabel + '</div>'
+    + '<div class="question-label">— 选择正确的字词填入空白处 —</div>'
+    + '<div class="fill-line">' + (q.userAnswer !== null ? filledLineHtml : lineHtml) + '</div>'
+    + '<div class="fill-options" style="gap:10px;margin-top:8px">' + optionsHtml + '</div>';
+}
+
+
+function renderQ5(q, idx) {
+  const yesState = q.userAnswer === true ? ' selected-yes' : '';
+  const noState = q.userAnswer === false ? ' selected-no' : '';
+  const dis = q.userAnswer !== null ? 'disabled' : '';
+  // Show feedback after answering
+  let feedbackHtml = '';
+  if (q.userAnswer !== null) {
+    const ok = q.userAnswer === q.isActuallyCorrect;
+    feedbackHtml = '<div style="margin-top:12px;text-align:center;font-size:15px;letter-spacing:2px">'
+      + (ok ? '<span class="res-correct-txt">✅ 回答正确！</span>' : '<span class="res-wrong-txt">❌ 回答错误，正确答案是「' + (q.isActuallyCorrect ? '是' : '否') + '」</span>')
+      + '</div>';
+  }
+  return '<span class="q-type-badge t5">❓ 诗词判断</span>'
+    + '<div class="question-label">— 判断以下说法是否正确 —</div>'
+    + '<div class="judge-statement" style="font-size:clamp(15px,3.2vw,20px);line-height:2.2;letter-spacing:3px;text-align:center">' + q.statement + '</div>'
+    + '<div class="tf-row"><button class="tf-btn tf-yes' + yesState + '" ' + dis + ' onclick="selectTF(' + idx + ',true)">✅ 是</button><button class="tf-btn tf-no' + noState + '" ' + dis + ' onclick="selectTF(' + idx + ',false)">❌ 否</button></div>'
+    + feedbackHtml;
+}
+
+function renderQ6(q, idx) {
+  const typeLabel = q.lineLen === 5 ? '五言诗句' : '七言诗句';
+  const selectedChars = q.selectedIndices.map(gi => q.gridChars[gi]);
+  // Answer slots
+  const slotsHtml = Array.from({length: q.lineLen}, (_, i) => {
+    const c = selectedChars[i] || '';
+    if (q.userAnswer !== null) {
+      const isOk = c === q.correctChars[i];
+      const style = isOk ? 'background:var(--green);color:#fff;border-color:var(--green)' : 'background:var(--red);color:#fff;border-color:var(--red)';
+      return '<div class="compose-slot" style="' + style + '">' + (c || '　') + '</div>';
+    }
+    if (c) {
+      return '<div class="compose-slot" onclick="unselectQ6Char(' + idx + ',' + i + ')">' + c + '</div>';
+    }
+    return '<div class="compose-slot empty">＿</div>';
+  }).join('');
+
+  const usedSet = new Set(q.selectedIndices);
+
+  // Grid chars
+  const gridClass = 'compose-grid g' + q.gridCols;
+  const gridHtml = q.gridChars.map((c, ci) => {
+    const used = usedSet.has(ci);
+    let cls = 'compose-char-btn';
+    if (q.userAnswer !== null) {
+      if (q.correctChars.includes(c)) cls += ' correct';
+      else cls += ' wrong';
+    } else if (used) {
+      cls += ' used';
+    }
+    const dis = q.userAnswer !== null || used ? 'disabled' : '';
+    return '<button class="' + cls + '" ' + dis + ' onclick="selectQ6Char(' + idx + ',' + ci + ')">' + c + '</button>';
+  }).join('');
+
+  // Submit button
+  const canSubmit = q.selectedIndices.length === q.lineLen && q.userAnswer === null;
+  const submitBtn = q.userAnswer === null
+    ? '<div style="text-align:center;margin-top:12px"><button class="btn btn-gold btn-sm" ' + (canSubmit ? '' : 'disabled') + ' onclick="submitQ6(' + idx + ')">确认提交</button>'
+    + '　<button class="btn btn-outline btn-sm" onclick="clearQ6(' + idx + ')" ' + (q.selectedIndices.length === 0 ? 'disabled' : '') + '>清空重选</button></div>'
+    : '';
+
+  // Feedback
+  let feedbackHtml = '';
+  if (q.userAnswer !== null) {
+    const ok = q.userAnswer === q.line;
+    feedbackHtml = '<div style="margin-top:12px;text-align:center;font-size:15px;letter-spacing:2px">'
+      + (ok ? '<span class="res-correct-txt">✅ 正确！</span>'
+           : '<span class="res-wrong-txt">❌ 正确答案：' + q.line + '</span>')
+      + '</div>';
+  }
+
+  const poemLabel = '《' + q.poem.title + '》—— ' + q.poem.dynasty + ' · ' + q.poem.author;
+  return '<span class="q-type-badge t6">🧩 选词组诗（' + typeLabel + '）</span>'
+    + '<div class="question-label" style="font-size:12px;margin-bottom:10px">' + poemLabel + '</div>'
+    + '<div class="question-label">— 从下列文字中找出一句' + typeLabel + ' —</div>'
+    + '<div class="compose-answer-row">' + slotsHtml + '</div>'
+    + '<div class="' + gridClass + '">' + gridHtml + '</div>'
+    + submitBtn + feedbackHtml;
+}
+
+function selectQ6Char(idx, charIdx) {
+  const q = gs.questions[idx];
+  if (q.userAnswer !== null) return;
+  if (q.selectedIndices.length >= q.lineLen) return;
+  q.selectedIndices.push(charIdx);
+  renderQuestion(idx);
+}
+
+function unselectQ6Char(idx, slotIdx) {
+  const q = gs.questions[idx];
+  if (q.userAnswer !== null) return;
+  q.selectedIndices.splice(slotIdx, 1);
+  renderQuestion(idx);
+}
+
+function clearQ6(idx) {
+  const q = gs.questions[idx];
+  if (q.userAnswer !== null) return;
+  q.selectedIndices = [];
+  renderQuestion(idx);
+}
+
+function submitQ6(idx) {
+  const q = gs.questions[idx];
+  if (q.userAnswer !== null) return;
+  if (q.selectedIndices.length !== q.lineLen) return;
+  q.userAnswer = q.selectedIndices.map(gi => q.gridChars[gi]).join('');
+  renderQuestion(idx);
+  recordAnswer();
+}
+
+// ================================
+
+function selectQ2Option(idx, answer) {
+  const q = gs.questions[idx];
+  if (q.userAnswer !== null) return;
+  q.userAnswer = answer;
+  renderQuestion(idx);
+  recordAnswer();
+}
+
+function selectTF(idx, answer) {
+  const q = gs.questions[idx];
+  if (q.userAnswer !== null) return;
+  q.userAnswer = answer;
+  renderQuestion(idx);
+  recordAnswer();
+}
+
+// ================================
+//  RESULTS
+// ================================
+function isAnswerCorrect(q) {
+  if (q.userAnswer === null) return false;
+  if (q.type === 2) return q.userAnswer === q.correctText;
+  if (q.type === 6) return q.userAnswer === q.line;
+  // type 5 is true/false
+  return q.userAnswer === q.isActuallyCorrect;
+}
+
+function showResults() {
+  showScreen('screen-result');
+  const correctCount = gs.questions.filter(isAnswerCorrect).length;
+  const acc = Math.round(correctCount / TOTAL_Q * 100);
+  const em = Math.floor(gs.elapsed / 60);
+  const es = gs.elapsed % 60;
+  document.getElementById('res-correct').textContent = correctCount;
+  document.getElementById('res-total').textContent = TOTAL_Q;
+  document.getElementById('res-accuracy').textContent = acc + '%';
+  document.getElementById('res-time').textContent = String(em).padStart(2,'0') + ':' + String(es).padStart(2,'0');
+
+  const modeLabels = {0:'综合训练', 2:'选词填空', 5:'诗词判断', 6:'选词组诗'};
+  const ranks = ['尚需苦读📖','初露头角🌱','学识渐丰📜','诗才横溢🖊','才华卓越🏮','诗词大家🏆'];
+  document.getElementById('res-title').textContent =
+    '【' + modeLabels[gs.mode] + '】' + ranks[Math.min(5, Math.floor(correctCount / TOTAL_Q * 5.99))];
+
+  const hsKey = 'poetry_hs_' + gs.mode;
+  const hs = parseInt(localStorage.getItem(hsKey) || '0');
+  if (correctCount > hs) {
+    localStorage.setItem(hsKey, correctCount);
+    document.getElementById('res-highscore').innerHTML = '<span class="highscore-badge">🎉 模式最高分！</span>';
+  } else {
+    document.getElementById('res-highscore').innerHTML = hs > 0 ? '<span style="color:var(--ink-light);font-size:13px">本模式最高：' + hs + ' 题答对</span>' : '';
+  }
+
+  // Update dots
+  const dots = document.querySelectorAll('.q-dot');
+  gs.questions.forEach((q, i) => {
+    if (!dots[i]) return;
+    dots[i].classList.remove('answered','active');
+    if (isAnswerCorrect(q)) dots[i].classList.add('res-correct');
+    else dots[i].classList.add('res-wrong');
+  });
+
+  const typeNames = {2:'选词填空', 5:'诗词判断', 6:'选词组诗'};
+  const list = document.getElementById('result-list');
+  list.innerHTML = gs.questions.map((q, i) => {
+    const ok = isAnswerCorrect(q);
+    const icon = ok ? '✅' : '❌';
+    let detail = '';
+    if (q.type === 2) {
+      detail = '<div>诗句：' + q.displayLine + '（《' + q.poem.title + '》）</div>'
+        + '<div>你选择：<span class="' + (ok?'res-correct-txt':'res-wrong-txt') + '">' + (q.userAnswer || '（未作答）') + '</span></div>'
+        + (!ok ? '<div>正确答案：<span class="res-correct-txt">' + q.correctText + '</span></div>' : '');
+    } else if (q.type === 5) {
+      detail = '<div style="font-size:13px;line-height:2;letter-spacing:1px">' + q.statement + '</div>'
+        + '<div>正确答案：<strong class="res-correct-txt">' + (q.isActuallyCorrect ? '是' : '否') + '</strong>，你答：<span class="' + (ok?'res-correct-txt':'res-wrong-txt') + '">' + (q.userAnswer===null?'（未作答）': q.userAnswer?'是':'否') + '</span></div>';
+    } else {
+      detail = '<div>正确诗句：<span class="res-correct-txt">' + q.line + '</span>（《' + q.poem.title + '》）</div>'
+        + '<div>你的组合：<span class="' + (ok?'res-correct-txt':'res-wrong-txt') + '">' + (q.userAnswer || '（未作答）') + '</span></div>';
+    }
+    return '<div class="res-q-card ' + (ok?'res-correct':'res-wrong') + '">'
+      + '<div class="res-q-num">' + icon + ' 第 ' + (i+1) + ' 题 · ' + typeNames[q.type] + '</div>'
+      + '<div class="res-q-content">' + detail + '</div></div>';
+  }).join('');
+}
+
+// ================================
+//  HOME / NAV
+// ================================
+function goHome() {
+  stopTimer();
+  showScreen('screen-home');
+  updateHomeHighScore();
+}
+
+function restartGame() { startGame(gs.mode); }
+
+function updateHomeHighScore() {
+  const modeNames = {0:'综合', 2:'填空', 5:'诗词判断', 6:'组诗'};
+  const parts = [0,2,5,6].map(m => {
+    const hs = parseInt(localStorage.getItem('poetry_hs_' + m) || '0');
+    return hs > 0 ? modeNames[m] + ' ' + hs + '题' : null;
+  }).filter(Boolean);
+  const el = document.getElementById('home-highscore');
+  el.innerHTML = parts.length
+    ? '🏅 最高记录：' + parts.join('　')
+    : '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateHomeHighScore();
+
+  // ── Generate apple-touch-icon via Canvas (PNG, 180×180) ──────────
+  try {
+    const sz = 180, r = 36;
+    const cv = document.createElement('canvas');
+    cv.width = sz; cv.height = sz;
+    const ctx = cv.getContext('2d');
+    // Rounded background
+    ctx.beginPath();
+    ctx.moveTo(r,0); ctx.lineTo(sz-r,0); ctx.arcTo(sz,0,sz,r,r);
+    ctx.lineTo(sz,sz-r); ctx.arcTo(sz,sz,sz-r,sz,r);
+    ctx.lineTo(r,sz); ctx.arcTo(0,sz,0,sz-r,r);
+    ctx.lineTo(0,r); ctx.arcTo(0,0,r,0,r);
+    ctx.closePath();
+    ctx.fillStyle = '#fdf6e3'; ctx.fill();
+    // Red seal
+    const m = 18;
+    ctx.fillStyle = '#9b1b1b';
+    ctx.fillRect(m, m, sz-2*m, sz-2*m);
+    // Gold inner border
+    ctx.strokeStyle = '#e8c95d'; ctx.lineWidth = 3;
+    ctx.strokeRect(m+8, m+8, sz-2*m-16, sz-2*m-16);
+    // Character 诗
+    ctx.fillStyle = '#e8c95d';
+    ctx.font = 'bold 82px SimSun, STSong, serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('诗', sz/2, sz/2 + 2);
+    // Inject as apple-touch-icon
+    const link = document.getElementById('apple-touch-icon-link');
+    if (link) link.href = cv.toDataURL('image/png');
+  } catch(e) { /* keep SVG fallback */ }
+
+  // ── Service Worker registration ──────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('[SW] registered, scope:', reg.scope))
+      .catch(err => console.warn('[SW] registration failed:', err));
+  }
+
+  // ── iOS "Add to Home Screen" hint ─────────────────────
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches;
+  const dismissed = localStorage.getItem('ios_hint_dismissed');
+  if (isIOS && !isStandalone && !dismissed) {
+    setTimeout(() => {
+      const el = document.getElementById('ios-install-hint');
+      if (el) el.style.display = 'block';
+    }, 3000);
+    const closeBtn = document.querySelector('.hint-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        localStorage.setItem('ios_hint_dismissed', '1');
+      });
+    }
+  }
+});
+</script>
+</body>
+</html>

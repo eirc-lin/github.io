@@ -1,0 +1,21 @@
+{
+  "name": "诗词永流传",
+  "short_name": "诗词",
+  "description": "吟诵千古，传承文脉 — 四种题型诗词答题小游戏",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf6e3",
+  "theme_color": "#b8860b",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

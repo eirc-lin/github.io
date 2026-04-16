@@ -336,7 +336,7 @@
     </div>
   </div>
   <div style="font-size:12px;color:var(--ink-light);letter-spacing:1px;text-align:center;line-height:2;animation:fadeInUp 0.9s ease 0.3s both">
-    限时 8 分钟 · 20 道题 · 答题期间可自由返回修改 · 时间结束自动交卷
+    单项训练：无限制模式，随时结束 · 综合训练：限时 8 分钟 · 20 道题
   </div>
   <div id="home-highscore" style="font-size:13px;color:var(--ink-light);letter-spacing:1px;margin-top:-6px;text-align:center;"></div>
 </div>
@@ -389,244 +389,304 @@
 const POEMS = [
   { title:"静夜思", author:"李白", dynasty:"唐",
     lines:["床前明月光","疑是地上霜","举头望明月","低头思故乡"],
-    desc:"描写了诗人身处异乡，借明月抒发深深的思乡之情" },
+    desc:"描写了诗人身处异乡，借明月抒发深深的思乡之情",
+    descKid:"小朋友，想象一下：晚上睡不着的时候，看到窗前亮亮的月光洒在地上，像白白的霜一样。抬头看看月亮，又低下头，好想念远方的家和爸爸妈妈呀！这首诗就是说一个人在外面很想家的心情。" },
   { title:"春晓", author:"孟浩然", dynasty:"唐",
     lines:["春眠不觉晓","处处闻啼鸟","夜来风雨声","花落知多少"],
-    desc:"描写了春天早晨醒来，听闻鸟鸣，感叹夜雨落花的春日意境" },
+    desc:"描写了春天早晨醒来，听闻鸟鸣，感叹夜雨落花的春日意境",
+    descKid:"小朋友，春天来了！睡得好香好香，不知不觉天就亮了。醒来的时候，到处都能听到小鸟叽叽喳喳地唱歌。想起昨天晚上刮风下雨了，不知道花园里的花瓣掉了多少呢？好心疼那些小花呀！" },
   { title:"登鹳雀楼", author:"王之涣", dynasty:"唐",
     lines:["白日依山尽","黄河入海流","欲穷千里目","更上一层楼"],
-    desc:"通过登楼远眺的壮阔景色，寄托了积极向上、不断进取的人生哲理" },
+    desc:"通过登楼远眺的壮阔景色，寄托了积极向上、不断进取的人生哲理",
+    descKid:"小朋友，站在高高的楼上往远处看：太阳慢慢躲到大山后面去了，黄河的水哗哗地流向大海。想看到更远更远的地方吗？那就再爬高一层楼吧！这首诗告诉我们：想要做得更好，就要不断努力往上走！" },
   { title:"悯农（其一）", author:"李绅", dynasty:"唐",
     lines:["春种一粒粟","秋收万颗子","四海无闲田","农夫犹饿死"],
-    desc:"揭示了封建社会农民辛苦耕作却依然饥寒交迫的悲惨现实" },
+    desc:"揭示了封建社会农民辛苦耕作却依然饥寒交迫的悲惨现实",
+    descKid:"小朋友，农民伯伯春天种下一粒小种子，到了秋天就能收获好多好多粮食。到处的田地都种满了庄稼，可是种地的农民伯伯却还是吃不饱饭，好可怜呀！我们要珍惜粮食哦。" },
   { title:"悯农（其二）", author:"李绅", dynasty:"唐",
     lines:["锄禾日当午","汗滴禾下土","谁知盘中餐","粒粒皆辛苦"],
-    desc:"描写农民烈日下锄地劳作的辛苦，告诫世人珍惜粮食" },
+    desc:"描写农民烈日下锄地劳作的辛苦，告诫世人珍惜粮食",
+    descKid:"小朋友，中午太阳火辣辣的，农民伯伯还在田里干活，汗水一滴一滴掉到泥土里。我们碗里的饭，每一粒都是农民伯伯辛辛苦苦种出来的呀！所以吃饭的时候不能浪费，要把饭吃光光哦！" },
   { title:"江雪", author:"柳宗元", dynasty:"唐",
     lines:["千山鸟飞绝","万径人踪灭","孤舟蓑笠翁","独钓寒江雪"],
-    desc:"以冰雪茫茫中独钓的老翁，寄托了诗人孤傲清高、不随世俗的情操" },
+    desc:"以冰雪茫茫中独钓的老翁，寄托了诗人孤傲清高、不随世俗的情操",
+    descKid:"小朋友，想象一下冬天下大雪的时候：所有的山上都看不到一只小鸟，所有的路上都没有人走过的脚印。只有一个穿着蓑衣、戴着斗笠的老爷爷，一个人坐在小船上，在冰冷的江面上钓鱼。好安静、好冷呀！" },
   { title:"山行", author:"杜牧", dynasty:"唐",
     lines:["远上寒山石径斜","白云深处有人家","停车坐爱枫林晚","霜叶红于二月花"],
-    desc:"描写秋日山行所见，以枫叶红胜春花表达了对秋景的独特赞美" },
+    desc:"描写秋日山行所见，以枫叶红胜春花表达了对秋景的独特赞美",
+    descKid:"小朋友，秋天的时候，沿着弯弯曲曲的石头小路往山上走，哇！白云飘飘的地方还住着人家呢。停下来看看旁边的枫树林，红红的枫叶比春天的花还要美！原来秋天也可以这么漂亮呀！" },
   { title:"望庐山瀑布", author:"李白", dynasty:"唐",
     lines:["日照香炉生紫烟","遥看瀑布挂前川","飞流直下三千尺","疑是银河落九天"],
-    desc:"以浪漫夸张的笔法描写庐山瀑布的雄伟壮观，充满奇思妙想" },
+    desc:"以浪漫夸张的笔法描写庐山瀑布的雄伟壮观，充满奇思妙想",
+    descKid:"小朋友，太阳照在庐山上，升起紫色的烟雾，好漂亮！远远看去，瀑布就像一条白色的大布挂在山上。水哗哗地从很高很高的地方冲下来，就像天上的银河掉到人间一样！好壮观呀！" },
   { title:"早发白帝城", author:"李白", dynasty:"唐",
     lines:["朝辞白帝彩云间","千里江陵一日还","两岸猿声啼不住","轻舟已过万重山"],
-    desc:"描写诗人遇赦后乘舟顺江而下，表达了轻松愉快、如释重负的心情" },
+    desc:"描写诗人遇赦后乘舟顺江而下，表达了轻松愉快、如释重负的心情",
+    descKid:"小朋友，早上从高高的白帝城出发，那里云彩好漂亮！坐着小船顺着水流，一天就到了很远的江陵。两边山上的小猴子一直在叫，可是小船跑得好快好快，一下子就穿过了好多好多座大山！好开心呀！" },
   { title:"赠汪伦", author:"李白", dynasty:"唐",
     lines:["李白乘舟将欲行","忽闻岸上踏歌声","桃花潭水深千尺","不及汪伦送我情"],
-    desc:"以桃花潭水之深比喻友情之深，表达了对友人汪伦深厚情谊的感激" },
+    desc:"以桃花潭水之深比喻友情之深，表达了对友人汪伦深厚情谊的感激",
+    descKid:"小朋友，李白要坐船离开了，忽然听到岸上有人唱着歌来送他，原来是好朋友汪伦呀！李白说：桃花潭的水虽然有千尺那么深，但是都比不上汪伦对我的友情深呢！好朋友之间的感情是最珍贵的！" },
   { title:"望天门山", author:"李白", dynasty:"唐",
     lines:["天门中断楚江开","碧水东流至此回","两岸青山相对出","孤帆一片日边来"],
-    desc:"描写天门山两岸峭壁夹江、长江奔腾东流的壮丽景观" },
+    desc:"描写天门山两岸峭壁夹江、长江奔腾东流的壮丽景观",
+    descKid:"小朋友，有两座大山就像一扇大门被长江水冲开了！碧绿的江水流到这里就打转转。两边的青山好像在互相打招呼，远处还有一只小帆船，从太阳那边慢慢驶过来，好美呀！" },
   { title:"绝句", author:"杜甫", dynasty:"唐",
     lines:["两个黄鹂鸣翠柳","一行白鹭上青天","窗含西岭千秋雪","门泊东吴万里船"],
-    desc:"以鲜明色彩描绘了成都草堂春日生机盎然的美丽景象" },
+    desc:"以鲜明色彩描绘了成都草堂春日生机盎然的美丽景象",
+    descKid:"小朋友，来看这幅画：两只黄色的小鸟在绿色的柳树上唱歌，一排白色的鸟儿飞向蓝蓝的天空。从窗户看出去，远处的山顶有白白的雪，门前停着要去远方的大船。黄、绿、白、蓝，好多颜色，好漂亮！" },
+  { title:"绝句", author:"杜甫", dynasty:"唐",
+    lines:["迟日江山丽","春风花草香","泥融飞燕子","沙暖睡鸳鸯"],
+    desc:"描写春日阳光和煦、花草芬芳、燕子飞舞、鸳鸯安睡的明丽春景",
+    descKid:"小朋友，春天来了！太阳暖暖的，照得山和河都好漂亮。春风吹来，花花草草好香呀！泥土变软了，小燕子飞来飞去忙着搭窝。沙滩暖暖的，两只鸳鸯靠在一起睡觉，好温馨！" },
   { title:"春夜喜雨", author:"杜甫", dynasty:"唐",
     lines:["好雨知时节","当春乃发生","随风潜入夜","润物细无声"],
-    desc:"以拟人手法赞美了春雨及时而来、悄无声息润泽万物的品格" },
+    desc:"以拟人手法赞美了春雨及时而来、悄无声息润泽万物的品格",
+    descKid:"小朋友，这场春雨好聪明呀！它知道什么时候该下。春天到了，它就悄悄地来了。跟着风，偷偷地在夜里飘下来，轻轻地让花草树木都喝到水，一点声音都没有。就像妈妈半夜悄悄给你盖被子一样温柔！" },
   { title:"枫桥夜泊", author:"张继", dynasty:"唐",
     lines:["月落乌啼霜满天","江枫渔火对愁眠","姑苏城外寒山寺","夜半钟声到客船"],
-    desc:"描写了深秋夜晚停船枫桥，月落、乌啼、钟声交织出的旅途愁思" },
+    desc:"描写了深秋夜晚停船枫桥，月落、乌啼、钟声交织出的旅途愁思",
+    descKid:"小朋友，夜深了，月亮落下去了，乌鸦在叫，到处冷冷的。一个人坐在小船上，看着岸边的枫树和渔船上的灯火，睡不着觉。半夜的时候，远处寒山寺的钟声'当——当——'传到了船上，好孤单呀！" },
   { title:"九月九日忆山东兄弟", author:"王维", dynasty:"唐",
     lines:["独在异乡为异客","每逢佳节倍思亲","遥知兄弟登高处","遍插茱萸少一人"],
-    desc:"描写重阳佳节客居他乡的思亲之情，道出了天下游子共同的心声" },
-  { title:"鸟鸣涧", author:"王维", dynasty:"唐",
-    lines:["人闲桂花落","夜静春山空","月出惊山鸟","时鸣春涧中"],
-    desc:"以月出鸟鸣衬托出春山夜晚的幽静，充满禅意与自然之美" },
+    desc:"描写重阳佳节客居他乡的思亲之情，道出了天下游子共同的心声",
+    descKid:"小朋友，一个人在很远很远的地方，过节的时候特别特别想家人。想到家里的兄弟们一起爬山、戴茱萸（一种香香的植物），可是数一数人数，少了一个人——就是自己呀！好想回家和大家在一起！" },
   { title:"出塞", author:"王昌龄", dynasty:"唐",
     lines:["秦时明月汉时关","万里长征人未还","但使龙城飞将在","不教胡马度阴山"],
-    desc:"借边关月色抒发对戍边将士的同情，寄托了渴望良将镇边的爱国情怀" },
+    desc:"借边关月色抒发对戍边将士的同情，寄托了渴望良将镇边的爱国情怀",
+    descKid:"小朋友，边疆的月亮和城墙从很久很久以前就在那里了。士兵们去了很远的地方打仗，很多人都没有回来。要是有像李广那样厉害的将军在就好了，一定不会让坏人闯进来！" },
   { title:"凉州词", author:"王翰", dynasty:"唐",
     lines:["葡萄美酒夜光杯","欲饮琵琶马上催","醉卧沙场君莫笑","古来征战几人回"],
-    desc:"描写出征前夜痛饮美酒的场面，以豪迈姿态面对生死，悲壮中见豁达" },
+    desc:"描写出征前夜痛饮美酒的场面，以豪迈姿态面对生死，悲壮中见豁达",
+    descKid:"小朋友，士兵们明天就要去打仗了，今晚大家一起喝葡萄酒，用漂亮的杯子。音乐响起来催促出发了。有人说：就算喝醉了躺在战场上，你也别笑话我呀——从古到今，去打仗的人有几个能回来呢？" },
   { title:"回乡偶书", author:"贺知章", dynasty:"唐",
     lines:["少小离家老大回","乡音无改鬓毛衰","儿童相见不相识","笑问客从何处来"],
-    desc:"描写诗人晚年归乡，物是人非，儿童不识，感叹岁月流逝、时光不再" },
+    desc:"描写诗人晚年归乡，物是人非，儿童不识，感叹岁月流逝、时光不再",
+    descKid:"小朋友，有一个老爷爷小时候离开家，到老了才回来。虽然他说话的口音没有变，但是头发都白了。村里的小朋友看到他都不认识，笑着问：'老爷爷，你是从哪里来的呀？'老爷爷心里好感慨呀！" },
   { title:"题西林壁", author:"苏轼", dynasty:"宋",
     lines:["横看成岭侧成峰","远近高低各不同","不识庐山真面目","只缘身在此山中"],
-    desc:"借观察庐山的不同视角，阐述了当局者迷、旁观者清的深刻哲理" },
+    desc:"借观察庐山的不同视角，阐述了当局者迷、旁观者清的深刻哲理",
+    descKid:"小朋友，从正面看庐山是一条长长的山岭，从侧面看又变成了高高的山峰。远看近看、高看低看，每次都不一样！为什么看不清庐山到底长什么样呢？因为我们自己就站在山里面呀！就像你站在操场上，看不到操场有多大一样。" },
   { title:"饮湖上初晴后雨", author:"苏轼", dynasty:"宋",
     lines:["水光潋滟晴方好","山色空蒙雨亦奇","欲把西湖比西子","淡妆浓抹总相宜"],
-    desc:"将西湖晴雨两种景色比作西施淡妆浓抹，皆是别样风情" },
-  { title:"梅花", author:"王安石", dynasty:"宋",
-    lines:["墙角数枝梅","凌寒独自开","遥知不是雪","为有暗香来"],
-    desc:"以凌寒独放的梅花象征高洁坚贞的品格，托物言志，意境幽远" },
+    desc:"将西湖晴雨两种景色比作西施淡妆浓抹，皆是别样风情",
+    descKid:"小朋友，西湖晴天的时候，水面波光闪闪，好漂亮！下雨的时候，山上雾蒙蒙的，也好美！诗人说：西湖就像一个漂亮的姐姐，不管是化淡淡的妆还是浓浓的妆，都很好看！" },
   { title:"示儿", author:"陆游", dynasty:"宋",
     lines:["死去元知万事空","但悲不见九州同","王师北定中原日","家祭无忘告乃翁"],
-    desc:"陆游临终绝笔，念念不忘国家统一，嘱咐子孙收复中原后告知自己" },
+    desc:"陆游临终绝笔，念念不忘国家统一，嘱咐子孙收复中原后告知自己",
+    descKid:"小朋友，陆游爷爷快要去世了，他最大的遗憾就是没能看到国家统一。他对孩子们说：'等到我们的军队收复失地的那一天，过节祭拜祖先的时候，别忘了把这个好消息告诉爸爸呀！'他太爱自己的国家了！" },
   { title:"小池", author:"杨万里", dynasty:"宋",
     lines:["泉眼无声惜细流","树阴照水爱晴柔","小荷才露尖尖角","早有蜻蜓立上头"],
-    desc:"描写初夏小池美景，小荷初露、蜻蜓先来，生动活泼，充满童趣" },
+    desc:"描写初夏小池美景，小荷初露、蜻蜓先来，生动活泼，充满童趣",
+    descKid:"小朋友，有一个小小的水池，泉水细细地、轻轻地流出来，好像舍不得多流一点。树荫映在水面上，好温柔。刚刚长出来的小荷叶，才露出一个尖尖的小角，就已经有一只小蜻蜓站在上面啦！好可爱！" },
   { title:"晓出净慈寺送林子方", author:"杨万里", dynasty:"宋",
     lines:["毕竟西湖六月中","风光不与四时同","接天莲叶无穷碧","映日荷花别样红"],
-    desc:"以六月西湖接天碧莲、映日红荷的壮丽景象，烘托出别样的送别情怀" },
+    desc:"以六月西湖接天碧莲、映日红荷的壮丽景象，烘托出别样的送别情怀",
+    descKid:"小朋友，六月的西湖果然和其他时候不一样！绿绿的莲叶一直铺到天边，多得数不清。太阳照在荷花上，粉红粉红的，特别特别漂亮！就像铺了一块巨大的绿毯子，上面开满了粉红的花！" },
   { title:"春日", author:"朱熹", dynasty:"宋",
     lines:["胜日寻芳泗水滨","无边光景一时新","等闲识得东风面","万紫千红总是春"],
-    desc:"借春日寻芳之景，寓意理学新气象，万紫千红皆为春风所化育" },
+    desc:"借春日寻芳之景，寓意理学新气象，万紫千红皆为春风所化育",
+    descKid:"小朋友，在一个好天气里去河边找春天，哇！到处都变得新新的、亮亮的！轻轻松松就能认出春风的样子——你看，紫色的、红色的、各种颜色的花都开了，这就是春天呀！" },
   { title:"游园不值", author:"叶绍翁", dynasty:"宋",
     lines:["应怜屐齿印苍苔","小扣柴扉久不开","春色满园关不住","一枝红杏出墙来"],
-    desc:"游园叩门无人应，却见一枝红杏伸出墙外，以小见大，感受春意盎然" },
+    desc:"游园叩门无人应，却见一枝红杏伸出墙外，以小见大，感受春意盎然",
+    descKid:"小朋友，有人去朋友的花园玩，敲了半天门都没人开。正要走的时候，发现有一枝粉红色的杏花从墙头伸出来了！虽然进不去花园，但是看到这枝花就知道——里面一定开满了花，春天关都关不住呢！" },
   { title:"咏柳", author:"贺知章", dynasty:"唐",
     lines:["碧玉妆成一树高","万条垂下绿丝绦","不知细叶谁裁出","二月春风似剪刀"],
-    desc:"以碧玉和剪刀比喻柳树与春风，描绘了早春柳树婀娜多姿的美丽" },
+    desc:"以碧玉和剪刀比喻柳树与春风，描绘了早春柳树婀娜多姿的美丽",
+    descKid:"小朋友，春天的柳树好漂亮呀！像一块碧绿的玉石打扮出来的，好多好多绿色的柳条垂下来，像绿色的丝带。那细细的柳叶是谁剪出来的呢？哦！原来是二月的春风，它就像一把大剪刀！" },
   { title:"望洞庭", author:"刘禹锡", dynasty:"唐",
     lines:["湖光秋月两相和","潭面无风镜未磨","遥望洞庭山水翠","白银盘里一青螺"],
-    desc:"以白银盘中青螺比喻月色下的洞庭湖与君山，描绘出清冷柔和的秋日夜景" },
-  { title:"乌衣巷", author:"刘禹锡", dynasty:"唐",
-    lines:["朱雀桥边野草花","乌衣巷口夕阳斜","旧时王谢堂前燕","飞入寻常百姓家"],
-    desc:"通过旧燕飞入寻常百姓家，感叹昔日豪门今已没落，表达了历史沧桑之感" },
+    desc:"以白银盘中青螺比喻月色下的洞庭湖与君山，描绘出清冷柔和的秋日夜景",
+    descKid:"小朋友，秋天的夜晚，月亮照在洞庭湖上，湖水和月光融在一起，好柔和。湖面没有风，平平的像一面没有擦过的镜子。远远看过去，洞庭湖就像一个大大的银盘子，中间的小山就像盘子里放了一颗青色的小螺！" },
   { title:"己亥杂诗", author:"龚自珍", dynasty:"清",
     lines:["浩荡离愁白日斜","吟鞭东指即天涯","落红不是无情物","化作春泥更护花"],
-    desc:"以落花化为春泥护花自比，表达了诗人虽辞官离京仍甘愿奉献的情怀" },
+    desc:"以落花化为春泥护花自比，表达了诗人虽辞官离京仍甘愿奉献的情怀",
+    descKid:"小朋友，诗人要离开了，心里有点难过。但是他说：掉落的花瓣不是不好的东西哦！它们落在地上变成泥土，可以保护新的小花长大。就像爸爸妈妈一样，总是在默默地保护着我们长大！" },
   { title:"竹石", author:"郑燮", dynasty:"清",
     lines:["咬定青山不放松","立根原在破岩中","千磨万击还坚劲","任尔东西南北风"],
-    desc:"以竹子咬定青山、坚韧不屈，象征不随世俗、坚守气节的品格" },
+    desc:"以竹子咬定青山、坚韧不屈，象征不随世俗、坚守气节的品格",
+    descKid:"小朋友，有一棵竹子紧紧地抓住青山不放手，它的根扎在破碎的石头缝里。不管被风吹了多少次、被雨打了多少次，它还是直直地站着，不管东南西北风怎么吹都不怕！我们也要像竹子一样坚强哦！" },
   { title:"石灰吟", author:"于谦", dynasty:"明",
     lines:["千锤万凿出深山","烈火焚烧若等闲","粉骨碎身浑不怕","要留清白在人间"],
-    desc:"借石灰历经千锤百炼仍保持清白，表达了诗人不畏艰险、廉洁正直的志向" },
+    desc:"借石灰历经千锤百炼仍保持清白，表达了诗人不畏艰险、廉洁正直的志向",
+    descKid:"小朋友，石灰石从大山里被一锤一锤地凿出来，又被大火烧，但是它一点都不怕。就算被磨成粉也不害怕，因为它要把自己洁白的颜色留在世界上。这首诗告诉我们：做人要正直、不怕困难！" },
   { title:"所见", author:"袁枚", dynasty:"清",
     lines:["牧童骑黄牛","歌声振林樾","意欲捕鸣蝉","忽然闭口立"],
-    desc:"描写牧童骑牛高歌、突然停声欲捕鸣蝉的有趣场景，充满天真童趣" },
+    desc:"描写牧童骑牛高歌、突然停声欲捕鸣蝉的有趣场景，充满天真童趣",
+    descKid:"小朋友，有个小牧童骑在大黄牛背上，高高兴兴地唱歌，歌声把树林都震动了！忽然，他听到树上有知了在叫，想去抓它。于是他马上闭上嘴巴，站在那里一动不动——怕把知了吓跑了！哈哈，好可爱！" },
   { title:"村居", author:"高鼎", dynasty:"清",
     lines:["草长莺飞二月天","拂堤杨柳醉春烟","儿童散学归来早","忙趁东风放纸鸢"],
-    desc:"描写早春乡村草长莺飞的美景与儿童散学后欢快放风筝的生动画面" },
-  { title:"宿新市徐公店", author:"杨万里", dynasty:"宋",
-    lines:["篱落疏疏一径深","树头花落未成阴","儿童急走追黄蝶","飞入菜花无处寻"],
-    desc:"描写暮春篱边小径，儿童追蝶、蝴蝶消失于菜花中的趣味盎然场景" },
+    desc:"描写早春乡村草长莺飞的美景与儿童散学后欢快放风筝的生动画面",
+    descKid:"小朋友，二月的春天，小草长出来了，黄莺在天上飞。柳树的枝条轻轻碰着河堤，像喝醉了一样在春风里摇啊摇。小朋友们放学回来得早，赶紧趁着风大，跑出去放风筝啦！好开心！" },
   { title:"夏日绝句", author:"李清照", dynasty:"宋",
     lines:["生当作人杰","死亦为鬼雄","至今思项羽","不肯过江东"],
-    desc:"借赞颂项羽宁死不屈的气节，讽刺南宋统治者偏安一隅的懦弱行为" },
-  { title:"望岳", author:"杜甫", dynasty:"唐",
-    lines:["岱宗夫如何","齐鲁青未了","造化钟神秀","阴阳割昏晓","荡胸生曾云","决眦入归鸟","会当凌绝顶","一览众山小"],
-    desc:"描写泰山巍峨神秀，以「会当凌绝顶，一览众山小」抒发昂扬向上的豪情" },
-  { title:"送杜少府之任蜀州", author:"王勃", dynasty:"唐",
-    lines:["城阙辅三秦","风烟望五津","与君离别意","同是宦游人","海内存知己","天涯若比邻","无为在歧路","儿女共沾巾"],
-    desc:"以豁达的胸怀写送别，「海内存知己，天涯若比邻」表达了真挚友情超越空间阻隔" },
+    desc:"借赞颂项羽宁死不屈的气节，讽刺南宋统治者偏安一隅的懦弱行为",
+    descKid:"小朋友，这首诗说：活着的时候要做最棒的人，就算不在了也要做最勇敢的。到现在人们还记得项羽，他虽然打了败仗，但是很有骨气，宁可不逃跑也要坚持到底。我们要做勇敢的人哦！" },
   { title:"浪淘沙", author:"刘禹锡", dynasty:"唐",
     lines:["九曲黄河万里沙","浪淘风簸自天涯","如今直上银河去","同到牵牛织女家"],
-    desc:"以黄河的浩荡奔腾为引，展开顺流直上银河的浪漫联想，豪气冲天" },
+    desc:"以黄河的浩荡奔腾为引，展开顺流直上银河的浪漫联想，豪气冲天",
+    descKid:"小朋友，黄河弯弯曲曲流了好远好远，带着好多好多沙子，大浪和风从天边那么远的地方来。诗人想象：如果能顺着黄河一直往上飞到天上的银河，就可以去牛郎织女的家做客啦！好有想象力！" },
   { title:"秋夜将晓出篱门迎凉有感", author:"陆游", dynasty:"宋",
     lines:["三万里河东入海","五千仞岳上摩天","遗民泪尽胡尘里","南望王师又一年"],
-    desc:"描写北方沦陷区百姓翘首盼望王师归来、年年失望的悲凉处境" },
+    desc:"描写北方沦陷区百姓翘首盼望王师归来、年年失望的悲凉处境",
+    descKid:"小朋友，黄河好长好长，流到了大海里；华山好高好高，都碰到天了。但是那里的老百姓被坏人占了家园，每天哭啊哭，一年又一年地望着南方，盼着自己的军队来救他们，可是一直没有等到，好可怜！" },
   { title:"江南", author:"佚名", dynasty:"汉",
     lines:["江南可采莲","莲叶何田田","鱼戏莲叶间","鱼戏莲叶东","鱼戏莲叶西","鱼戏莲叶南","鱼戏莲叶北"],
-    desc:"描写江南水乡采莲的美景，以鱼儿戏水莲叶间的生动画面，展现了生机盎然的江南风光" },
+    desc:"描写江南水乡采莲的美景，以鱼儿戏水莲叶间的生动画面，展现了生机盎然的江南风光",
+    descKid:"小朋友，江南的水塘里可以采莲子呢！莲叶又大又多，密密麻麻的。小鱼在莲叶中间游来游去玩耍——一会儿游到东边，一会儿游到西边，一会儿游到南边，一会儿又游到北边。好快活的小鱼！" },
   { title:"风", author:"李峤", dynasty:"唐",
     lines:["解落三秋叶","能开二月花","过江千尺浪","入竹万竿斜"],
-    desc:"以描绘风的力量与作用，赞美风无形却能开花落叶、掀浪折竹的神奇力量" },
+    desc:"以描绘风的力量与作用，赞美风无形却能开花落叶、掀浪折竹的神奇力量",
+    descKid:"小朋友，风看不见也摸不着，但是好厉害！秋天它能把树叶吹落下来，春天它能让花儿开放。它吹过江面，能掀起高高的浪花；它吹进竹林，好多好多竹子都被吹歪了！风真是个大力士！" },
   { title:"长歌行", author:"佚名", dynasty:"汉",
     lines:["青青园中葵","朝露待日晞","阳春布德泽","万物生光辉","常恐秋节至","焜黄华叶衰","百川东到海","何时复西归","少壮不努力","老大徒伤悲"],
-    desc:"以园中葵草和百川东流为喻，劝诫人们趁年少努力，莫待老大空悲叹" },
+    desc:"以园中葵草和百川东流为喻，劝诫人们趁年少努力，莫待老大空悲叹",
+    descKid:"小朋友，园子里绿油油的小菜苗上有露珠，太阳出来就晒干了。春天万物生长多美啊，可是秋天一到叶子就黄了。河水流到大海就回不来了。所以小朋友要趁现在好好学习，不然长大了就后悔啦！" },
   { title:"敕勒歌", author:"佚名", dynasty:"北朝",
     lines:["敕勒川","阴山下","天似穹庐","笼盖四野","天苍苍","野茫茫","风吹草低见牛羊"],
-    desc:"描写北方草原天高地阔、风吹草低见牛羊的壮阔景象，气势雄浑" },
+    desc:"描写北方草原天高地阔、风吹草低见牛羊的壮阔景象，气势雄浑",
+    descKid:"小朋友，在大草原上，阴山下面有一个叫敕勒川的地方。天空就像一个大大的帐篷，把整个草原都罩住了。天蓝蓝的，草原大大的，一阵风吹过来，草低下去了，就能看到藏在草丛里的牛和羊！好壮观！" },
   { title:"咏鹅", author:"骆宾王", dynasty:"唐",
     lines:["鹅鹅鹅","曲项向天歌","白毛浮绿水","红掌拨清波"],
-    desc:"描写鹅在水中游弋的姿态，以白毛、红掌与绿水相映，画面生动活泼" },
+    desc:"描写鹅在水中游弋的姿态，以白毛、红掌与绿水相映，画面生动活泼",
+    descKid:"小朋友，大白鹅在水里游泳啦！'鹅鹅鹅'——它弯着长长的脖子对着天空唱歌。白白的羽毛浮在绿绿的水上，红红的脚掌在清清的水里划呀划。白色、绿色、红色，好漂亮的大白鹅！" },
   { title:"凉州词", author:"王之涣", dynasty:"唐",
     lines:["黄河远上白云间","一片孤城万仞山","羌笛何须怨杨柳","春风不度玉门关"],
-    desc:"描写边塞孤城万仞、春风不度的荒凉，羌笛哀怨中透出戍边将士的悲苦情怀" },
+    desc:"描写边塞孤城万仞、春风不度的荒凉，羌笛哀怨中透出戍边将士的悲苦情怀",
+    descKid:"小朋友，黄河远远地流向白云那边，一座孤零零的小城被高高的大山围着。有人吹着笛子，声音好悲伤。别怪春风不来呀，因为玉门关太远了，春风都吹不到这里呢！那里的士兵们好辛苦！" },
   { title:"芙蓉楼送辛渐", author:"王昌龄", dynasty:"唐",
     lines:["寒雨连江夜入吴","平明送客楚山孤","洛阳亲友如相问","一片冰心在玉壶"],
-    desc:"以一片冰心在玉壶表明高洁品格，情深意切地抒发了对友人的惜别之情" },
+    desc:"以一片冰心在玉壶表明高洁品格，情深意切地抒发了对友人的惜别之情",
+    descKid:"小朋友，冷冷的雨下了一夜。天亮了，诗人送好朋友走，看着远处孤零零的山，好难过。他说：如果洛阳的亲戚朋友问起我怎么样，就告诉他们——我的心就像玉壶里的冰一样，又纯洁又干净！" },
   { title:"鹿柴", author:"王维", dynasty:"唐",
     lines:["空山不见人","但闻人语响","返景入深林","复照青苔上"],
-    desc:"以空山人语、返照青苔描绘深林幽静，展现禅意盎然、以动衬静的山林意境" },
+    desc:"以空山人语、返照青苔描绘深林幽静，展现禅意盎然、以动衬静的山林意境",
+    descKid:"小朋友，在一座空空的大山里，看不到一个人，但是能听到远处有人说话的声音。快要落山的阳光照进树林深处，照在绿绿的青苔上面。好安静、好美的地方！就像一个藏在山里的秘密花园！" },
   { title:"送元二使安西", author:"王维", dynasty:"唐",
     lines:["渭城朝雨浥轻尘","客舍青青柳色新","劝君更尽一杯酒","西出阳关无故人"],
-    desc:"以渭城细雨、柳色新绿衬托离别，劝君尽杯酒，情深义重地送别友人出使安西" },
+    desc:"以渭城细雨、柳色新绿衬托离别，劝君尽杯酒，情深义重地送别友人出使安西",
+    descKid:"小朋友，早上下了一场小雨，把路上的灰尘都冲干净了。旅店旁边的柳树绿绿的，好清新。诗人对好朋友说：'再喝一杯吧，出了阳关就没有老朋友陪你了呀！'好舍不得朋友走！" },
   { title:"黄鹤楼送孟浩然之广陵", author:"李白", dynasty:"唐",
     lines:["故人西辞黄鹤楼","烟花三月下扬州","孤帆远影碧空尽","唯见长江天际流"],
-    desc:"描写诗人在黄鹤楼送别好友孟浩然东去扬州，以孤帆消逝、长江天际表达深切的依依惜别之情" },
+    desc:"描写诗人在黄鹤楼送别好友孟浩然东去扬州，以孤帆消逝、长江天际表达深切的依依惜别之情",
+    descKid:"小朋友，三月份花开得好漂亮，好朋友孟浩然在黄鹤楼和李白告别，坐船去扬州了。李白一直站在那里看着朋友的船越走越远，最后船看不见了，只剩下长江的水向天边流去。他好想念朋友呀！" },
   { title:"古朗月行（节选）", author:"李白", dynasty:"唐",
     lines:["小时不识月","呼作白玉盘","又疑瑶台镜","飞在青云端"],
-    desc:"以儿童的视角将月亮比作白玉盘、瑶台镜，充满奇妙的想象与天真烂漫的童趣" },
+    desc:"以儿童的视角将月亮比作白玉盘、瑶台镜，充满奇妙的想象与天真烂漫的童趣",
+    descKid:"小朋友，你小时候第一次看到月亮的时候，是不是觉得它像一个白白的大盘子呀？李白小时候也是这样想的！他把月亮叫做'白玉盘'，又觉得像一面仙女的镜子飞到了天上的云朵里。好有想象力！" },
   { title:"别董大", author:"高适", dynasty:"唐",
     lines:["千里黄云白日曛","北风吹雁雪纷纷","莫愁前路无知己","天下谁人不识君"],
-    desc:"以苍茫天地、北风雪雁的荒凉背景，反衬出「天下谁人不识君」的豪迈送别之情" },
+    desc:"以苍茫天地、北风雪雁的荒凉背景，反衬出「天下谁人不识君」的豪迈送别之情",
+    descKid:"小朋友，天上全是黄黄的云，太阳都变暗了，北风呼呼地吹，大雁在飞，雪花飘飘。但诗人对朋友说：'别担心以后没有好朋友啦！你这么厉害，天下谁不认识你呀！'多鼓励人呀！" },
   { title:"滁州西涧", author:"韦应物", dynasty:"唐",
     lines:["独怜幽草涧边生","上有黄鹂深树鸣","春潮带雨晚来急","野渡无人舟自横"],
-    desc:"描写滁州西涧春日幽草、黄鹂、春潮、野渡的宁静画面，以无人野渡舟自横烘托闲适淡泊之情" },
+    desc:"描写滁州西涧春日幽草、黄鹂、春潮、野渡的宁静画面，以无人野渡舟自横烘托闲适淡泊之情",
+    descKid:"小朋友，小溪边长着安安静静的小草，树上有黄鹂鸟在唱歌。傍晚下雨了，溪水涨起来了，流得好快。渡口没有人，只有一只小船横在水面上，随着水轻轻地晃。好安静、好悠闲的地方！" },
   { title:"游子吟", author:"孟郊", dynasty:"唐",
     lines:["慈母手中线","游子身上衣","临行密密缝","意恐迟迟归","谁言寸草心","报得三春晖"],
-    desc:"以慈母为游子缝衣的细腻动作，抒发了子女对母亲深恩难以回报的真挚感恩之情" },
+    desc:"以慈母为游子缝衣的细腻动作，抒发了子女对母亲深恩难以回报的真挚感恩之情",
+    descKid:"小朋友，妈妈拿着针线，一针一线给要出远门的孩子缝衣服，缝得密密的，怕孩子很久才能回来。就像小草怎么报答太阳给它的温暖呢？我们也要像这首诗说的一样，好好爱妈妈！" },
   { title:"江畔独步寻花", author:"杜甫", dynasty:"唐",
     lines:["黄四娘家花满蹊","千朵万朵压枝低","留连戏蝶时时舞","自在娇莺恰恰啼"],
-    desc:"描写江边春日花团锦簇、蝴蝶留连、娇莺啼鸣的生动景象，表达了诗人对春色的喜爱" },
+    desc:"描写江边春日花团锦簇、蝴蝶留连、娇莺啼鸣的生动景象，表达了诗人对春色的喜爱",
+    descKid:"小朋友，黄四娘家的小路两旁开满了花，花太多了把树枝都压弯了！蝴蝶在花丛中飞来飞去，舍不得走。可爱的黄莺也在枝头唱歌，叫声好好听！春天的花园好热闹呀！" },
   { title:"早春呈水部张十八员外", author:"韩愈", dynasty:"唐",
     lines:["天街小雨润如酥","草色遥看近却无","最是一年春好处","绝胜烟柳满皇都"],
-    desc:"以早春细雨润物、草色若有若无的朦胧美，道出初春胜过烟柳满城的独特韵味" },
+    desc:"以早春细雨润物、草色若有若无的朦胧美，道出初春胜过烟柳满城的独特韵味",
+    descKid:"小朋友，早春的时候下了一场小雨，轻轻柔柔的像奶油一样。远远看草地好像绿绿的，走近一看，小草才刚刚冒出一点点头，好神奇！这就是一年中春天最美的时候，比柳树长满叶子还要好看呢！" },
   { title:"渔歌子", author:"张志和", dynasty:"唐",
     lines:["西塞山前白鹭飞","桃花流水鳜鱼肥","青箬笠","绿蓑衣","斜风细雨不须归"],
-    desc:"描写西塞山前白鹭、桃花、流水、鳜鱼的春江美景，表达渔人悠然自得、不愿归去的隐逸情怀" },
+    desc:"描写西塞山前白鹭、桃花、流水、鳜鱼的春江美景，表达渔人悠然自得、不愿归去的隐逸情怀",
+    descKid:"小朋友，西塞山前面白鹭在飞，桃花开了，河水流着，鱼儿好肥！一个钓鱼的人戴着青色的帽子、穿着绿色的雨衣，刮着小风、下着细雨也不想回家——因为这里太美了，他舍不得走！" },
   { title:"赋得古原草送别", author:"白居易", dynasty:"唐",
     lines:["离离原上草","一岁一枯荣","野火烧不尽","春风吹又生","远芳侵古道","晴翠接荒城","又送王孙去","萋萋满别情"],
-    desc:"借古原野草岁岁枯荣、野火烧不尽的顽强生命力，寄寓送别友人时绵绵不尽的离情别绪" },
+    desc:"借古原野草岁岁枯荣、野火烧不尽的顽强生命力，寄寓送别友人时绵绵不尽的离情别绪",
+    descKid:"小朋友，草原上的草长得好茂盛！每年冬天枯萎了，春天又长出来。就算被大火烧了，春风一吹又长出绿绿的新芽来！小草好坚强呀，怎么也打不败它！这首诗告诉我们要像小草一样坚强！" },
   { title:"塞下曲", author:"卢纶", dynasty:"唐",
     lines:["月黑雁飞高","单于夜遁逃","欲将轻骑逐","大雪满弓刀"],
-    desc:"描写月黑雁飞之夜将士轻骑追敌的紧张场面，以大雪满弓刀烘托边塞战场的壮烈气氛" },
+    desc:"描写月黑雁飞之夜将士轻骑追敌的紧张场面，以大雪满弓刀烘托边塞战场的壮烈气氛",
+    descKid:"小朋友，夜里月亮被云遮住了，黑黑的，大雁飞得高高的。敌人的首领趁着黑夜偷偷逃跑了！我们的将军马上带着骑兵去追！大雪纷飞，弓和刀上都沾满了雪花，好紧张好刺激！" },
   { title:"池上", author:"白居易", dynasty:"唐",
     lines:["小娃撑小艇","偷采白莲回","不解藏踪迹","浮萍一道开"],
-    desc:"描写小孩撑船偷采白莲、却不知浮萍已泄露行踪的有趣场景，童趣盎然，天真可爱" },
+    desc:"描写小孩撑船偷采白莲、却不知浮萍已泄露行踪的有趣场景，童趣盎然，天真可爱",
+    descKid:"小朋友，有个小娃娃偷偷撑着小船去摘白莲花，然后划船回来。他以为没人发现，可是他不知道，小船划过的地方，水面上的浮萍被分开了，留下了一条长长的'路'——踪迹全暴露啦！哈哈好好笑！" },
   { title:"忆江南", author:"白居易", dynasty:"唐",
     lines:["江南好","风景旧曾谙","日出江花红胜火","春来江水绿如蓝","能不忆江南"],
-    desc:"以江南春景的明艳色彩，表达了诗人对江南风光的深深怀念与热爱之情" },
+    desc:"以江南春景的明艳色彩，表达了诗人对江南风光的深深怀念与热爱之情",
+    descKid:"小朋友，江南好美呀！太阳出来的时候，河边的花红得比火还红；春天来了，江水绿得像蓝色的颜料一样。这么美的地方，怎么能不想念呢？诗人以前住过那里，现在好想念江南啊！" },
   { title:"小儿垂钓", author:"胡令能", dynasty:"唐",
     lines:["蓬头稚子学垂纶","侧坐莓苔草映身","路人借问遥招手","怕得鱼惊不应人"],
-    desc:"描写蓬头稚童学钓鱼的有趣情景，怕惊鱼而不敢应答路人，童趣天真可爱" },
+    desc:"描写蓬头稚童学钓鱼的有趣情景，怕惊鱼而不敢应答路人，童趣天真可爱",
+    descKid:"小朋友，有个头发乱乱的小孩在学钓鱼，侧着身子坐在长了青苔的石头旁边，草把他挡住了。有人走过来问路，他远远地摆手——不是不想回答，是怕说话声把鱼吓跑了！好认真的小钓鱼家！" },
   { title:"清明", author:"杜牧", dynasty:"唐",
     lines:["清明时节雨纷纷","路上行人欲断魂","借问酒家何处有","牧童遥指杏花村"],
-    desc:"描写清明时节细雨纷飞、行人断魂的凄迷景象，以问路寻酒增添生活气息" },
+    desc:"描写清明时节细雨纷飞、行人断魂的凄迷景象，以问路寻酒增添生活气息",
+    descKid:"小朋友，清明节的时候下着小雨，路上的人心情不太好。有人问：'哪里有饭馆呀？'一个放牛的小牧童指了指远处说：'那边有个杏花村！'远远看去，杏花开得好漂亮！" },
   { title:"江南春", author:"杜牧", dynasty:"唐",
     lines:["千里莺啼绿映红","水村山郭酒旗风","南朝四百八十寺","多少楼台烟雨中"],
-    desc:"以千里江南莺啼红绿的春色与南朝烟雨古寺，勾勒出江南春日的迷人风光与历史沧桑" },
+    desc:"以千里江南莺啼红绿的春色与南朝烟雨古寺，勾勒出江南春日的迷人风光与历史沧桑",
+    descKid:"小朋友，江南好大好美！到处都能听到黄莺唱歌，绿色的树配上红色的花。水边的村庄、山旁的小城、饭馆的旗子在风里飘。还有好多好多古老的寺庙，在蒙蒙细雨中若隐若现，好像仙境一样！" },
   { title:"寻隐者不遇", author:"贾岛", dynasty:"唐",
     lines:["松下问童子","言师采药去","只在此山中","云深不知处"],
-    desc:"以问答形式描写寻访隐者而不遇的情景，表达了对隐逸生活的向往与淡淡的惆怅" },
+    desc:"以问答形式描写寻访隐者而不遇的情景，表达了对隐逸生活的向往与淡淡的惆怅",
+    descKid:"小朋友，有人去山上找一位隐居的老师。在松树下问他的小徒弟：'你师父去哪了？'小徒弟说：'师父去山上采药了。就在这座山里面，可是云雾太浓了，不知道他在哪里。'好神秘的大山！" },
   { title:"蜂", author:"罗隐", dynasty:"唐",
     lines:["不论平地与山尖","无限风光尽被占","采得百花成蜜后","为谁辛苦为谁甜"],
-    desc:"借蜜蜂采花酿蜜却不得享受的命运，讽喻劳动者辛苦而成果被他人占有的社会现实" },
+    desc:"借蜜蜂采花酿蜜却不得享受的命运，讽喻劳动者辛苦而成果被他人占有的社会现实",
+    descKid:"小朋友，小蜜蜂好忙呀！不管是平地还是山顶，到处都有它们的身影。它们辛辛苦苦采了好多花，酿成了甜甜的蜂蜜。可是蜂蜜都被别人吃了——小蜜蜂这么辛苦是为了谁呢？" },
   { title:"江上渔者", author:"范仲淹", dynasty:"宋",
     lines:["江上往来人","但爱鲈鱼美","君看一叶舟","出没风波里"],
-    desc:"以江上往来人只知鲈鱼美味，却不见渔民风波中讨生活的艰辛，寄寓对劳动者的同情" },
+    desc:"以江上往来人只知鲈鱼美味，却不见渔民风波中讨生活的艰辛，寄寓对劳动者的同情",
+    descKid:"小朋友，江边来来往往的人都说鲈鱼好好吃。可是你看看——那条小船在大浪里一会儿出现一会儿消失，渔民伯伯多危险呀！我们吃鱼的时候要记得，这是渔民伯伯冒着风浪辛苦捕来的！" },
   { title:"元日", author:"王安石", dynasty:"宋",
     lines:["爆竹声中一岁除","春风送暖入屠苏","千门万户曈曈日","总把新桃换旧符"],
-    desc:"描写新年喜庆气象，以爆竹、春风、曈曈日、新桃旧符展现除旧迎新的欢乐场景" },
+    desc:"描写新年喜庆气象，以爆竹、春风、曈曈日、新桃旧符展现除旧迎新的欢乐场景",
+    descKid:"小朋友，过新年啦！噼里啪啦放鞭炮，旧的一年过去了！春风暖暖的，大家喝屠苏酒庆祝。太阳亮亮的照着每家每户，大家都把门上旧的对联换成新的。新年新气象，好开心！" },
   { title:"六月二十七日望湖楼醉书", author:"苏轼", dynasty:"宋",
     lines:["黑云翻墨未遮山","白雨跳珠乱入船","卷地风来忽吹散","望湖楼下水如天"],
-    desc:"描写西湖夏日骤雨骤晴的壮观景象，以墨云、跳珠、狂风、水天展现大自然的变幻之美" },
+    desc:"描写西湖夏日骤雨骤晴的壮观景象，以墨云、跳珠、狂风、水天展现大自然的变幻之美",
+    descKid:"小朋友，夏天西湖边好神奇！黑黑的乌云像墨汁一样翻过来，还没遮住山呢，白白的大雨点就像珠子一样跳进船里。忽然一阵大风吹来，云和雨全没了！湖水平得像天空一样，好快的变化！" },
   { title:"泊船瓜洲", author:"王安石", dynasty:"宋",
     lines:["京口瓜洲一水间","钟山只隔数重山","春风又绿江南岸","明月何时照我还"],
-    desc:"以春风又绿江南岸的清新景象，表达了诗人思乡念归的深切情感" },
+    desc:"以春风又绿江南岸的清新景象，表达了诗人思乡念归的深切情感",
+    descKid:"小朋友，京口和瓜洲只隔了一条河，我的家乡钟山也只隔了几座山。春风又把江南吹绿了，什么时候月亮能照着我回到家乡呢？诗人站在江边好想家呀！" },
   { title:"书湖阴先生壁", author:"王安石", dynasty:"宋",
     lines:["茅檐长扫净无苔","花木成畦手自栽","一水护田将绿绕","两山排闼送青来"],
-    desc:"描写湖阴先生庭院的清幽雅洁，以山水拟人化手法展现田园生活的恬静之美" },
+    desc:"描写湖阴先生庭院的清幽雅洁，以山水拟人化手法展现田园生活的恬静之美",
+    descKid:"小朋友，有一位老爷爷把自己家门前扫得干干净净，花和树都是自己亲手种的，排得整整齐齐。一条小河绕着绿绿的田地流过，好像在保护它。两座大山把绿色'送'到门口来了！好美的小院子！" },
   { title:"惠崇春江晚景", author:"苏轼", dynasty:"宋",
     lines:["竹外桃花三两枝","春江水暖鸭先知","蒌蒿满地芦芽短","正是河豚欲上时"],
-    desc:"为惠崇所画春江晚景题诗，以桃花、春江、鸭群、蒌蒿描绘早春江南的勃勃生机" },
+    desc:"为惠崇所画春江晚景题诗，以桃花、春江、鸭群、蒌蒿描绘早春江南的勃勃生机",
+    descKid:"小朋友，竹林外面开了两三枝粉红的桃花，春天来了！谁最先知道江水变暖了？是小鸭子呀！它们在水里游得好开心。地上长满了蒌蒿，芦笋也刚冒出短短的小芽。河豚鱼也要从海里游回来了！" },
   { title:"四时田园杂兴（其二十五）", author:"范成大", dynasty:"宋",
     lines:["梅子金黄杏子肥","麦花雪白菜花稀","日长篱落无人过","惟有蜻蜓蛱蝶飞"],
-    desc:"描写初夏田园风光，梅黄杏肥、麦白菜稀，篱落寂静唯蜻蜓蝴蝶纷飞，宁静闲适" },
+    desc:"描写初夏田园风光，梅黄杏肥、麦白菜稀，篱落寂静唯蜻蜓蝴蝶纷飞，宁静闲适",
+    descKid:"小朋友，初夏的田园好漂亮！梅子变成金黄色了，杏子长得胖胖的。麦子开了白白的花，菜花快要谢了。白天好长呀，篱笆旁边一个人都没有，只有蜻蜓和蝴蝶在飞来飞去。好安静好悠闲！" },
   { title:"四时田园杂兴（其三十一）", author:"范成大", dynasty:"宋",
     lines:["昼出耘田夜绩麻","村庄儿女各当家","童孙未解供耕织","也傍桑阴学种瓜"],
-    desc:"描写农家男女日夜劳作，儿童也在桑树下学种瓜，展现淳朴勤劳的乡村生活" },
+    desc:"描写农家男女日夜劳作，儿童也在桑树下学种瓜，展现淳朴勤劳的乡村生活",
+    descKid:"小朋友，村子里的叔叔阿姨好勤劳！白天在田里干活，晚上还搓麻线。小朋友虽然还不会种地织布，但是也跑到桑树下面，学着大人的样子种小瓜！好可爱、好懂事的小朋友！" },
   { title:"三衢道中", author:"曾几", dynasty:"宋",
     lines:["梅子黄时日日晴","小溪泛尽却山行","绿阴不减来时路","添得黄鹂四五声"],
-    desc:"描写梅雨季节难得的晴日出游，绿阴依旧、黄鹂啼鸣，表达了诗人愉快的旅途心情" },
+    desc:"描写梅雨季节难得的晴日出游，绿阴依旧、黄鹂啼鸣，表达了诗人愉快的旅途心情",
+    descKid:"小朋友，梅子黄了的时候通常都下雨，可是这几天天天都是大晴天！坐完小船又去爬山。路上的树荫和来的时候一样多，还多了四五声黄鹂鸟的歌声！出去玩好开心呀！" },
   { title:"乡村四月", author:"翁卷", dynasty:"宋",
     lines:["绿遍山原白满川","子规声里雨如烟","乡村四月闲人少","才了蚕桑又插田"],
-    desc:"描写江南四月乡村忙碌的农耕景象，绿野白水、子规声里，农人才忙完蚕桑又插田" },
+    desc:"描写江南四月乡村忙碌的农耕景象，绿野白水、子规声里，农人才忙完蚕桑又插田",
+    descKid:"小朋友，四月的乡村好忙呀！山上绿绿的，河里水满满的，布谷鸟在叫，下着像烟雾一样的细雨。村子里没有闲着的人——刚刚喂完蚕宝宝、忙完桑叶，又赶着去田里插秧了！大家都好勤劳！" },
   { title:"观书有感", author:"朱熹", dynasty:"宋",
     lines:["半亩方塘一鉴开","天光云影共徘徊","问渠那得清如许","为有源头活水来"],
-    desc:"以方塘清澈比喻读书明理，「源头活水」寓意不断学习才能保持思想清新" },
+    desc:"以方塘清澈比喻读书明理，「源头活水」寓意不断学习才能保持思想清新",
+    descKid:"小朋友，有一个小池塘像一面镜子，天上的光和云的影子在水里走来走去。为什么这个池塘的水这么清呢？因为有活水一直从源头流进来呀！就像我们要不断读书学习，脑袋才会越来越聪明！" },
   { title:"墨梅", author:"王冕", dynasty:"元",
     lines:["吾家洗砚池头树","个个花开淡墨痕","不要人夸好颜色","只流清气满乾坤"],
-    desc:"借墨梅不求颜色艳丽、只留清气满天地，表达了诗人淡泊名利、高洁自守的品格" },
+    desc:"借墨梅不求颜色艳丽、只留清气满天地，表达了诗人淡泊名利、高洁自守的品格",
+    descKid:"小朋友，诗人家里洗毛笔砚台的池塘边有棵梅花树，开出的花像淡淡的墨水画的一样。这棵梅花不需要别人夸它颜色漂亮，它只想把清清的香气飘满整个天地！做人也要像梅花一样，心灵美最重要！" },
   { title:"题临安邸", author:"林升", dynasty:"宋",
     lines:["山外青山楼外楼","西湖歌舞几时休","暖风熏得游人醉","直把杭州作汴州"],
-    desc:"讽刺南宋统治者不思收复失地、沉迷歌舞升平，将临时都城杭州当作故都汴州" }
+    desc:"讽刺南宋统治者不思收复失地、沉迷歌舞升平，将临时都城杭州当作故都汴州",
+    descKid:"小朋友，山的外面还有山，楼的外面还有楼，西湖边天天唱歌跳舞什么时候才停呢？暖暖的风把游玩的人都吹得像醉了一样开心，都忘记了自己真正的家在哪里了。这首诗是在批评那些只知道玩、不好好做事的人哦！" }
 ];
 
 // ================================
@@ -867,12 +927,16 @@ function makeQ5(usedSet) {
       statement = linesText + '，是诗人' + wrongAuthor + '对' + subject + '的描述？';
     }
   } else {
-    // "《WW》描写的是ZZ？"  — desc meaning check
+    // "《WW》描写的是ZZ？"  — desc meaning check (kid-friendly)
     if (isCorrect) {
-      statement = '《' + poem.title + '》' + poem.desc.slice(0, 20) + '……？';
+      const kidDesc = poem.descKid || poem.desc;
+      const shortKidDesc = kidDesc.length > 40 ? kidDesc.slice(0, 40) + '……' : kidDesc;
+      statement = '《' + poem.title + '》：' + shortKidDesc + '？';
     } else {
       const wrongPoem = pick(POEMS.filter(p => p.title !== poem.title));
-      statement = '《' + poem.title + '》' + wrongPoem.desc.slice(0, 20) + '……？';
+      const kidDesc = wrongPoem.descKid || wrongPoem.desc;
+      const shortKidDesc = kidDesc.length > 40 ? kidDesc.slice(0, 40) + '……' : kidDesc;
+      statement = '《' + poem.title + '》：' + shortKidDesc + '？';
     }
   }
 
@@ -906,15 +970,23 @@ function makeQ6(usedSet) {
   };
 }
 
+function isUnlimited(mode) { return mode === 2 || mode === 5 || mode === 6; }
+
+function makeOneQuestion(mode, usedSet) {
+  if (mode === 2) return makeQ2(usedSet);
+  if (mode === 5) return makeQ5(usedSet);
+  return makeQ6(usedSet);
+}
+
 function generateQuestions(mode) {
   const used = new Set();
-  let types;
-  if (mode === 0) {
-    // mixed: ~7 of each type, total 20
-    types = shuffle([2,2,2,2,2,2,2, 5,5,5,5,5,5, 6,6,6,6,6,6,6]).slice(0, 20);
-  } else {
-    types = Array(20).fill(mode);
+  if (isUnlimited(mode)) {
+    // unlimited: start with 1 question
+    return [makeOneQuestion(mode, used)];
   }
+  let types;
+  // mixed: 50% 诗词判断(10), 30% 选词填空(6), 20% 选词组诗(4), total 20
+  types = shuffle([5,5,5,5,5,5,5,5,5,5, 2,2,2,2,2,2, 6,6,6,6]).slice(0, 20);
   return types.map(t => {
     if (t === 2) return makeQ2(used);
     if (t === 5) return makeQ5(used);
@@ -959,18 +1031,41 @@ function showScreen(id) {
 // ================================
 function startGame(mode) {
   mode = (mode === undefined) ? 0 : mode;
+  const unlimited = isUnlimited(mode);
   gs = {
     mode,
     questions: generateQuestions(mode),
     idx: 0, timeLeft: TIME_SEC, timer: null,
-    submitted: false, startTime: Date.now()
+    submitted: false, startTime: Date.now(),
+    unlimited: unlimited,
+    usedSet: new Set()
   };
   showScreen('screen-game');
-  buildDots();
+  // UI differences for unlimited mode
+  const timerBox = document.getElementById('timer-box');
+  const dotNav = document.getElementById('dot-nav');
+  const submitBtn = document.querySelector('.game-topbar .btn');
+  if (unlimited) {
+    timerBox.style.display = 'none';
+    dotNav.style.display = 'none';
+    submitBtn.textContent = '结束训练';
+    document.getElementById('btn-prev').style.display = 'none';
+    document.getElementById('btn-next').style.display = 'none';
+  } else {
+    timerBox.style.display = '';
+    dotNav.style.display = '';
+    submitBtn.textContent = '提前交卷';
+    document.getElementById('btn-prev').style.display = '';
+    document.getElementById('btn-next').style.display = '';
+    buildDots();
+    startTimer();
+  }
   renderQuestion(0);
   updateNavButtons();
   updateAnsweredCount();
-  startTimer();
+  if (!unlimited) {
+    // timer already started above
+  }
 }
 
 function goQuestion(delta) {
@@ -988,13 +1083,36 @@ function goToQuestion(idx) {
 }
 
 function recordAnswer() {
-  updateDot(gs.idx);
-  updateAnsweredCount();
-  setTimeout(() => { if (gs.idx < TOTAL_Q - 1) goQuestion(1); }, 550);
+  if (gs.unlimited) {
+    updateAnsweredCount();
+    // Generate next question after a delay
+    setTimeout(() => {
+      const newQ = makeOneQuestion(gs.mode, gs.usedSet);
+      gs.questions.push(newQ);
+      gs.idx = gs.questions.length - 1;
+      renderQuestion(gs.idx);
+      updateNavButtons();
+      updateAnsweredCount();
+    }, 800);
+  } else {
+    updateDot(gs.idx);
+    updateAnsweredCount();
+    setTimeout(() => { if (gs.idx < TOTAL_Q - 1) goQuestion(1); }, 800);
+  }
 }
 
 function confirmSubmit() {
   if (gs.submitted) return;
+  if (gs.unlimited) {
+    const answered = gs.questions.filter(q => q.userAnswer !== null).length;
+    if (answered === 0) {
+      alert('至少答一题再结束哦！');
+      return;
+    }
+    if (!confirm('已答 ' + answered + ' 题，确定结束训练吗？')) return;
+    doSubmit();
+    return;
+  }
   const unanswered = gs.questions.filter(q => q.userAnswer === null).length;
   if (unanswered > 0) {
     if (!confirm('还有 ' + unanswered + ' 题未作答，确定提交并查看全部正误吗？')) return;
@@ -1040,6 +1158,10 @@ function updateDot(activeIdx) {
 }
 
 function updateNavButtons() {
+  if (gs.unlimited) {
+    document.getElementById('q-counter').textContent = '第 ' + (gs.idx + 1) + ' 题';
+    return;
+  }
   document.getElementById('btn-prev').disabled = gs.idx === 0;
   document.getElementById('btn-next').disabled = gs.idx === TOTAL_Q - 1;
   document.getElementById('q-counter').textContent = (gs.idx + 1) + ' / ' + TOTAL_Q;
@@ -1048,7 +1170,12 @@ function updateNavButtons() {
 
 function updateAnsweredCount() {
   const cnt = gs.questions.filter(q => q.userAnswer !== null).length;
-  document.getElementById('answered-count').textContent = '已答 ' + cnt + '/' + TOTAL_Q;
+  if (gs.unlimited) {
+    const correct = gs.questions.filter(isAnswerCorrect).length;
+    document.getElementById('answered-count').textContent = '✅ ' + correct + ' / ' + cnt + ' 题';
+  } else {
+    document.getElementById('answered-count').textContent = '已答 ' + cnt + '/' + TOTAL_Q;
+  }
 }
 
 // ================================
@@ -1109,7 +1236,8 @@ function renderQ2(q, idx) {
     + '<div class="question-label" style="font-size:12px;margin-bottom:10px">' + poemLabel + '</div>'
     + '<div class="question-label">— 选择正确的字词填入空白处 —</div>'
     + '<div class="fill-line">' + (q.userAnswer !== null ? filledLineHtml : lineHtml) + '</div>'
-    + '<div class="fill-options" style="gap:10px;margin-top:8px">' + optionsHtml + '</div>';
+    + '<div class="fill-options" style="gap:10px;margin-top:8px">' + optionsHtml + '</div>'
+    + (q.userAnswer !== null && !gs.unlimited && !gs.submitted ? '<div style="text-align:center;margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetAnswer(' + idx + ')">🔄 重新作答</button></div>' : '');
 }
 
 
@@ -1121,15 +1249,20 @@ function renderQ5(q, idx) {
   let feedbackHtml = '';
   if (q.userAnswer !== null) {
     const ok = q.userAnswer === q.isActuallyCorrect;
+    const kidDesc = q.poem.descKid || q.poem.desc;
     feedbackHtml = '<div style="margin-top:12px;text-align:center;font-size:15px;letter-spacing:2px">'
       + (ok ? '<span class="res-correct-txt">✅ 回答正确！</span>' : '<span class="res-wrong-txt">❌ 回答错误，正确答案是「' + (q.isActuallyCorrect ? '是' : '否') + '」</span>')
-      + '</div>';
+      + '</div>'
+      + '<div style="margin-top:10px;padding:12px;background:rgba(184,134,11,0.08);border-radius:8px;font-size:13px;line-height:2;letter-spacing:1px;color:var(--ink-light);border-left:3px solid var(--gold)">'
+      + '<strong>📖 诗词小课堂：</strong>《' + q.poem.title + '》—— ' + q.poem.dynasty + ' · ' + q.poem.author
+      + '<br>' + kidDesc + '</div>';
   }
   return '<span class="q-type-badge t5">❓ 诗词判断</span>'
     + '<div class="question-label">— 判断以下说法是否正确 —</div>'
     + '<div class="judge-statement" style="font-size:clamp(15px,3.2vw,20px);line-height:2.2;letter-spacing:3px;text-align:center">' + q.statement + '</div>'
     + '<div class="tf-row"><button class="tf-btn tf-yes' + yesState + '" ' + dis + ' onclick="selectTF(' + idx + ',true)">✅ 是</button><button class="tf-btn tf-no' + noState + '" ' + dis + ' onclick="selectTF(' + idx + ',false)">❌ 否</button></div>'
-    + feedbackHtml;
+    + feedbackHtml
+    + (q.userAnswer !== null && !gs.unlimited && !gs.submitted ? '<div style="text-align:center;margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetAnswer(' + idx + ')">🔄 重新作答</button></div>' : '');
 }
 
 function renderQ6(q, idx) {
@@ -1166,11 +1299,9 @@ function renderQ6(q, idx) {
     return '<button class="' + cls + '" ' + dis + ' onclick="selectQ6Char(' + idx + ',' + ci + ')">' + c + '</button>';
   }).join('');
 
-  // Submit button
-  const canSubmit = q.selectedIndices.length === q.lineLen && q.userAnswer === null;
+  // Clear button only (auto-submit when all selected)
   const submitBtn = q.userAnswer === null
-    ? '<div style="text-align:center;margin-top:12px"><button class="btn btn-gold btn-sm" ' + (canSubmit ? '' : 'disabled') + ' onclick="submitQ6(' + idx + ')">确认提交</button>'
-    + '　<button class="btn btn-outline btn-sm" onclick="clearQ6(' + idx + ')" ' + (q.selectedIndices.length === 0 ? 'disabled' : '') + '>清空重选</button></div>'
+    ? '<div style="text-align:center;margin-top:12px"><button class="btn btn-outline btn-sm" onclick="clearQ6(' + idx + ')" ' + (q.selectedIndices.length === 0 ? 'disabled' : '') + '>清空重选</button></div>'
     : '';
 
   // Feedback
@@ -1189,7 +1320,8 @@ function renderQ6(q, idx) {
     + '<div class="question-label">— 从下列文字中找出一句' + typeLabel + ' —</div>'
     + '<div class="compose-answer-row">' + slotsHtml + '</div>'
     + '<div class="' + gridClass + '">' + gridHtml + '</div>'
-    + submitBtn + feedbackHtml;
+    + submitBtn + feedbackHtml
+    + (q.userAnswer !== null && !gs.unlimited && !gs.submitted ? '<div style="text-align:center;margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetAnswer(' + idx + ')">🔄 重新作答</button></div>' : '');
 }
 
 function selectQ6Char(idx, charIdx) {
@@ -1197,6 +1329,13 @@ function selectQ6Char(idx, charIdx) {
   if (q.userAnswer !== null) return;
   if (q.selectedIndices.length >= q.lineLen) return;
   q.selectedIndices.push(charIdx);
+  // Auto-submit when all slots are filled
+  if (q.selectedIndices.length === q.lineLen) {
+    q.userAnswer = q.selectedIndices.map(gi => q.gridChars[gi]).join('');
+    renderQuestion(idx);
+    recordAnswer();
+    return;
+  }
   renderQuestion(idx);
 }
 
@@ -1212,6 +1351,16 @@ function clearQ6(idx) {
   if (q.userAnswer !== null) return;
   q.selectedIndices = [];
   renderQuestion(idx);
+}
+
+function resetAnswer(idx) {
+  const q = gs.questions[idx];
+  if (q.userAnswer === null) return;
+  q.userAnswer = null;
+  if (q.type === 6) q.selectedIndices = [];
+  renderQuestion(idx);
+  updateDot(gs.idx);
+  updateAnsweredCount();
 }
 
 function submitQ6(idx) {
@@ -1254,19 +1403,22 @@ function isAnswerCorrect(q) {
 
 function showResults() {
   showScreen('screen-result');
-  const correctCount = gs.questions.filter(isAnswerCorrect).length;
-  const acc = Math.round(correctCount / TOTAL_Q * 100);
+  // For unlimited mode, only count answered questions
+  const answeredQs = gs.unlimited ? gs.questions.filter(q => q.userAnswer !== null) : gs.questions;
+  const totalQ = answeredQs.length;
+  const correctCount = answeredQs.filter(isAnswerCorrect).length;
+  const acc = totalQ > 0 ? Math.round(correctCount / totalQ * 100) : 0;
   const em = Math.floor(gs.elapsed / 60);
   const es = gs.elapsed % 60;
   document.getElementById('res-correct').textContent = correctCount;
-  document.getElementById('res-total').textContent = TOTAL_Q;
+  document.getElementById('res-total').textContent = totalQ;
   document.getElementById('res-accuracy').textContent = acc + '%';
   document.getElementById('res-time').textContent = String(em).padStart(2,'0') + ':' + String(es).padStart(2,'0');
 
   const modeLabels = {0:'综合训练', 2:'选词填空', 5:'诗词判断', 6:'选词组诗'};
   const ranks = ['尚需苦读📖','初露头角🌱','学识渐丰📜','诗才横溢🖊','才华卓越🏮','诗词大家🏆'];
   document.getElementById('res-title').textContent =
-    '【' + modeLabels[gs.mode] + '】' + ranks[Math.min(5, Math.floor(correctCount / TOTAL_Q * 5.99))];
+    '【' + modeLabels[gs.mode] + '】' + ranks[Math.min(5, Math.floor((totalQ > 0 ? correctCount / totalQ : 0) * 5.99))];
 
   const hsKey = 'poetry_hs_' + gs.mode;
   const hs = parseInt(localStorage.getItem(hsKey) || '0');
@@ -1277,18 +1429,20 @@ function showResults() {
     document.getElementById('res-highscore').innerHTML = hs > 0 ? '<span style="color:var(--ink-light);font-size:13px">本模式最高：' + hs + ' 题答对</span>' : '';
   }
 
-  // Update dots
-  const dots = document.querySelectorAll('.q-dot');
-  gs.questions.forEach((q, i) => {
-    if (!dots[i]) return;
-    dots[i].classList.remove('answered','active');
-    if (isAnswerCorrect(q)) dots[i].classList.add('res-correct');
-    else dots[i].classList.add('res-wrong');
-  });
+  // Update dots (only for non-unlimited)
+  if (!gs.unlimited) {
+    const dots = document.querySelectorAll('.q-dot');
+    gs.questions.forEach((q, i) => {
+      if (!dots[i]) return;
+      dots[i].classList.remove('answered','active');
+      if (isAnswerCorrect(q)) dots[i].classList.add('res-correct');
+      else dots[i].classList.add('res-wrong');
+    });
+  }
 
   const typeNames = {2:'选词填空', 5:'诗词判断', 6:'选词组诗'};
   const list = document.getElementById('result-list');
-  list.innerHTML = gs.questions.map((q, i) => {
+  list.innerHTML = answeredQs.map((q, i) => {
     const ok = isAnswerCorrect(q);
     const icon = ok ? '✅' : '❌';
     let detail = '';

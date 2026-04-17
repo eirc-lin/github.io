@@ -216,6 +216,9 @@
   .tf-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
   .tf-btn.selected-yes { background: var(--green); color: #fff; }
   .tf-btn.selected-no { background: var(--red); color: #fff; }
+  /* Neutral selection: answer recorded but feedback not yet revealed */
+  .tf-btn.selected-neutral { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .fill-opt-btn.selected-neutral { background: var(--gold) !important; color: #fff !important; border-color: var(--gold) !important; }
   .tf-btn:disabled { cursor: default; }
 
   /* Game nav — add bottom safe area for iPhone home indicator */
@@ -1388,6 +1391,13 @@ function clearQuestionSelection(q) {
   }
 }
 
+function blockContainerClicks(ms) {
+  const container = document.getElementById('question-container');
+  if (!container) return;
+  container.style.pointerEvents = 'none';
+  setTimeout(() => { container.style.pointerEvents = ''; }, ms);
+}
+
 function recordAnswer() {
   if (gs.unlimited) {
     updateAnsweredCount();
@@ -1399,6 +1409,8 @@ function recordAnswer() {
       gs.questions.push(newQ);
       gs.idx = gs.questions.length - 1;
       renderQuestion(gs.idx);
+      // Block ghost clicks / residual touch events on freshly rendered options
+      blockContainerClicks(500);
       updateNavButtons();
       updateAnsweredCount();
     }, 800);
@@ -1411,6 +1423,8 @@ function recordAnswer() {
         const nextQ = gs.questions[gs.idx + 1];
         clearQuestionSelection(nextQ);
         goQuestion(1);
+        // Block ghost clicks / residual touch events on freshly rendered options
+        blockContainerClicks(500);
       }
     }, 550);
   }
@@ -1508,6 +1522,10 @@ function renderQuestion(idx) {
 
 
 function renderQ2(q, idx) {
+  // Whether to reveal correct/wrong feedback (only after submit or in unlimited mode)
+  const showFeedback = gs.submitted || gs.unlimited;
+  const canModify2 = !gs.submitted && !gs.unlimited;
+
   // Show the line with blank(s) as underscores
   const lineHtml = q.displayLine.split('').map(c => {
     if (c === '_') return '<span class="fill-blank-char">' + (q.userAnswer ? '' : '＿') + '</span>';
@@ -1519,13 +1537,17 @@ function renderQ2(q, idx) {
     const chars = q.line.split('');
     filledLineHtml = chars.map((c, i) => {
       if (i >= q.blankStart && i < q.blankStart + q.blankLen) {
-        const isCorrect = q.userAnswer === q.correctText;
-        const cls = isCorrect ? 'fill-blank-char filled' : 'fill-blank-char';
-        const style = isCorrect ? 'color:var(--green);border-bottom-color:var(--green)' : 'color:var(--red);border-bottom-color:var(--red)';
-        // show user's answer chars
         const answerChars = q.userAnswer.split('');
         const localIdx = i - q.blankStart;
-        return '<span class="' + cls + '" style="' + style + '">' + (answerChars[localIdx] || '') + '</span>';
+        if (showFeedback) {
+          const isCorrect = q.userAnswer === q.correctText;
+          const cls = isCorrect ? 'fill-blank-char filled' : 'fill-blank-char';
+          const style = isCorrect ? 'color:var(--green);border-bottom-color:var(--green)' : 'color:var(--red);border-bottom-color:var(--red)';
+          return '<span class="' + cls + '" style="' + style + '">' + (answerChars[localIdx] || '') + '</span>';
+        } else {
+          // Neutral: show answer in gold without revealing correctness
+          return '<span class="fill-blank-char filled" style="color:var(--gold);border-bottom-color:var(--gold)">' + (answerChars[localIdx] || '') + '</span>';
+        }
       }
       return '<span>' + c + '</span>';
     }).join('');
@@ -1537,29 +1559,46 @@ function renderQ2(q, idx) {
     let cls = 'fill-opt-btn';
     let style = 'width:auto;min-width:60px;padding:8px 16px;font-size:18px;height:auto;';
     if (q.userAnswer !== null) {
-      if (opt === q.correctText) { cls += ' correct'; }
-      else if (opt === q.userAnswer && opt !== q.correctText) { cls += ' wrong'; }
+      if (showFeedback) {
+        if (opt === q.correctText) { cls += ' correct'; }
+        else if (opt === q.userAnswer && opt !== q.correctText) { cls += ' wrong'; }
+      } else {
+        // Neutral highlight: just show which option was selected
+        if (opt === q.userAnswer) { cls += ' selected-neutral'; }
+      }
     }
-    const dis = q.userAnswer !== null ? 'disabled' : '';
+    // Lock buttons only after submit or in unlimited mode
+    const dis = (q.userAnswer !== null && !canModify2) ? 'disabled' : '';
     return '<button class="' + cls + '" style="' + style + '" ' + dis
       + ' onclick="selectQ2Option(' + idx + ',\'' + opt + '\')">'
       + label + '、' + opt + '</button>';
   }).join('');
 
+  const modifyHint2 = (q.userAnswer !== null && canModify2)
+    ? '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--ink-light);letter-spacing:1px">💡 点击其他选项可修改答案</div>'
+    : '';
+
   return '<span class="q-type-badge t2">✏️ 选词填空</span>'
     + '<div class="question-label">— 选择正确的字词填入空白处 —</div>'
     + '<div class="fill-line">' + (q.userAnswer !== null ? filledLineHtml : lineHtml) + '</div>'
-    + '<div class="fill-options" style="gap:10px;margin-top:8px">' + optionsHtml + '</div>';
+    + '<div class="fill-options" style="gap:10px;margin-top:8px">' + optionsHtml + '</div>'
+    + modifyHint2;
 }
 
 
 function renderQ5(q, idx) {
-  const yesState = q.userAnswer === true ? ' selected-yes' : '';
-  const noState = q.userAnswer === false ? ' selected-no' : '';
-  const dis = q.userAnswer !== null ? 'disabled' : '';
-  // Show feedback after answering
+  const showFeedback = gs.submitted || gs.unlimited;
+  const canModify5 = !gs.submitted && !gs.unlimited;
+  // When feedback is hidden, use neutral gold highlight for the selected button
+  const yesState = q.userAnswer === true
+    ? (showFeedback ? ' selected-yes' : ' selected-neutral') : '';
+  const noState = q.userAnswer === false
+    ? (showFeedback ? ' selected-no' : ' selected-neutral') : '';
+  // Lock buttons only after submit or in unlimited mode
+  const dis = (q.userAnswer !== null && !canModify5) ? 'disabled' : '';
+  // Show feedback after answering (only when feedback is revealed)
   let feedbackHtml = '';
-  if (q.userAnswer !== null) {
+  if (q.userAnswer !== null && showFeedback) {
     const ok = q.userAnswer === q.isActuallyCorrect;
     const kidDesc = q.poem.descKid || q.poem.desc;
     feedbackHtml = '<div style="margin-top:12px;text-align:center;font-size:15px;letter-spacing:2px">'
@@ -1569,6 +1608,9 @@ function renderQ5(q, idx) {
       + '<strong>📖 诗词小课堂：</strong>《' + q.poem.title + '》—— ' + q.poem.dynasty + ' · ' + q.poem.author
       + '<br>' + kidDesc + '</div>';
   }
+  if (q.userAnswer !== null && canModify5) {
+    feedbackHtml += '<div style="text-align:center;margin-top:6px;font-size:12px;color:var(--ink-light);letter-spacing:1px">💡 点击另一个按钮可修改答案</div>';
+  }
   return '<span class="q-type-badge t5">❓ 诗词判断</span>'
     + '<div class="question-label">— 判断以下说法是否正确 —</div>'
     + '<div class="judge-statement" style="font-size:clamp(15px,3.2vw,20px);line-height:2.2;letter-spacing:3px;text-align:center">' + q.statement + '</div>'
@@ -1577,15 +1619,22 @@ function renderQ5(q, idx) {
 }
 
 function renderQ6(q, idx) {
+  const showFeedback = gs.submitted || gs.unlimited;
+  const canModify6 = !gs.submitted && !gs.unlimited;
   const typeLabel = q.lineLen === 5 ? '五言诗句' : '七言诗句';
   const selectedChars = q.selectedIndices.map(gi => q.gridChars[gi]);
   // Answer slots
   const slotsHtml = Array.from({length: q.lineLen}, (_, i) => {
     const c = selectedChars[i] || '';
     if (q.userAnswer !== null) {
-      const isOk = c === q.correctChars[i];
-      const style = isOk ? 'background:var(--green);color:#fff;border-color:var(--green)' : 'background:var(--red);color:#fff;border-color:var(--red)';
-      return '<div class="compose-slot" style="' + style + '">' + (c || '　') + '</div>';
+      if (showFeedback) {
+        const isOk = c === q.correctChars[i];
+        const style = isOk ? 'background:var(--green);color:#fff;border-color:var(--green)' : 'background:var(--red);color:#fff;border-color:var(--red)';
+        return '<div class="compose-slot" style="' + style + '">' + (c || '　') + '</div>';
+      } else {
+        // Neutral: show selected chars without revealing correctness
+        return '<div class="compose-slot" style="background:var(--gold);color:#fff;border-color:var(--gold)">' + (c || '　') + '</div>';
+      }
     }
     if (c) {
       return '<div class="compose-slot" onclick="unselectQ6Char(' + idx + ',' + i + ')">' + c + '</div>';
@@ -1601,8 +1650,11 @@ function renderQ6(q, idx) {
     const used = usedSet.has(ci);
     let cls = 'compose-char-btn';
     if (q.userAnswer !== null) {
-      if (q.correctChars.includes(c)) cls += ' correct';
-      else cls += ' wrong';
+      if (showFeedback) {
+        if (q.correctChars.includes(c)) cls += ' correct';
+        else cls += ' wrong';
+      }
+      // else: just disabled, no color hint
     } else if (used) {
       cls += ' used';
     }
@@ -1610,14 +1662,17 @@ function renderQ6(q, idx) {
     return '<button class="' + cls + '" ' + dis + ' onclick="selectQ6Char(' + idx + ',' + ci + ')">' + c + '</button>';
   }).join('');
 
-  // Clear button only (auto-submit when all selected)
-  const submitBtn = q.userAnswer === null
-    ? '<div style="text-align:center;margin-top:12px"><button class="btn btn-outline btn-sm" onclick="clearQ6(' + idx + ')" ' + (q.selectedIndices.length === 0 ? 'disabled' : '') + '>清空重选</button></div>'
-    : '';
+  // Button row: clear when unanswered, re-answer when answered+modifiable
+  let submitBtn = '';
+  if (q.userAnswer === null) {
+    submitBtn = '<div style="text-align:center;margin-top:12px"><button class="btn btn-outline btn-sm" onclick="clearQ6(' + idx + ')" ' + (q.selectedIndices.length === 0 ? 'disabled' : '') + '>清空重选</button></div>';
+  } else if (canModify6) {
+    submitBtn = '<div style="text-align:center;margin-top:12px"><button class="btn btn-outline btn-sm" onclick="clearQ6(' + idx + ')">✏️ 重新作答</button></div>';
+  }
 
-  // Feedback
+  // Feedback (only revealed after submission)
   let feedbackHtml = '';
-  if (q.userAnswer !== null) {
+  if (q.userAnswer !== null && showFeedback) {
     const ok = q.userAnswer === q.line;
     feedbackHtml = '<div style="margin-top:12px;text-align:center;font-size:15px;letter-spacing:2px">'
       + (ok ? '<span class="res-correct-txt">✅ 正确！</span>'
@@ -1639,6 +1694,7 @@ function selectQ6Char(idx, charIdx) {
   q.selectedIndices.push(charIdx);
   // Auto-submit when all slots are filled
   if (q.selectedIndices.length === q.lineLen) {
+    const isFirstAnswer = true; // q.userAnswer was null coming in
     q.userAnswer = q.selectedIndices.map(gi => q.gridChars[gi]).join('');
     renderQuestion(idx);
     recordAnswer();
@@ -1656,9 +1712,17 @@ function unselectQ6Char(idx, slotIdx) {
 
 function clearQ6(idx) {
   const q = gs.questions[idx];
-  if (q.userAnswer !== null) return;
+  if (gs.submitted) return;
+  if (gs.unlimited && q.userAnswer !== null) return;
+  const wasAnswered = q.userAnswer !== null;
+  q.userAnswer = null;
   q.selectedIndices = [];
   renderQuestion(idx);
+  // Update dot/count since the answer was cleared
+  if (wasAnswered) {
+    updateDot(gs.idx);
+    updateAnsweredCount();
+  }
 }
 
 function submitQ6(idx) {
@@ -1674,18 +1738,36 @@ function submitQ6(idx) {
 
 function selectQ2Option(idx, answer) {
   const q = gs.questions[idx];
-  if (q.userAnswer !== null) return;
+  if (gs.submitted) return;
+  // In unlimited mode, once answered it's locked
+  if (gs.unlimited && q.userAnswer !== null) return;
+  const isFirstAnswer = q.userAnswer === null;
   q.userAnswer = answer;
   renderQuestion(idx);
-  recordAnswer();
+  if (isFirstAnswer) {
+    recordAnswer();
+  } else {
+    // Re-answer: just update dot and count, no auto-advance
+    updateDot(gs.idx);
+    updateAnsweredCount();
+  }
 }
 
 function selectTF(idx, answer) {
   const q = gs.questions[idx];
-  if (q.userAnswer !== null) return;
+  if (gs.submitted) return;
+  // In unlimited mode, once answered it's locked
+  if (gs.unlimited && q.userAnswer !== null) return;
+  const isFirstAnswer = q.userAnswer === null;
   q.userAnswer = answer;
   renderQuestion(idx);
-  recordAnswer();
+  if (isFirstAnswer) {
+    recordAnswer();
+  } else {
+    // Re-answer: just update dot and count, no auto-advance
+    updateDot(gs.idx);
+    updateAnsweredCount();
+  }
 }
 
 // ================================

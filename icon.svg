@@ -1,8 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
-  <rect width="180" height="180" rx="36" fill="#fdf6e3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <clipPath id="round">
+      <rect width="180" height="180" rx="36" ry="36"/>
+    </clipPath>
+  </defs>
+  <!-- Background -->
+  <rect width="180" height="180" rx="36" ry="36" fill="#fdf6e3"/>
+  <!-- Red seal -->
   <rect x="18" y="18" width="144" height="144" fill="#9b1b1b"/>
+  <!-- Gold inner border -->
   <rect x="26" y="26" width="128" height="128" fill="none" stroke="#e8c95d" stroke-width="3"/>
-  <text x="90" y="96" font-size="82" font-weight="bold" text-anchor="middle" dominant-baseline="middle"
-        font-family="SimSun,STSong,serif" fill="#e8c95d">诗</text>
+  <!-- 诗 character -->
+  <text x="90" y="102" font-family="SimSun,STSong,serif" font-size="82" font-weight="bold"
+        fill="#e8c95d" text-anchor="middle" dominant-baseline="middle">诗</text>
 </svg>
 

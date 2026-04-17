@@ -1,16 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#fdf6e3"/>
-  <rect x="16" y="16" width="480" height="480" rx="96" fill="#f5e8c8"/>
-  <!-- Decorative border -->
-  <rect x="32" y="32" width="448" height="448" rx="80" fill="none" stroke="#b8860b" stroke-width="8" opacity="0.5"/>
-  <rect x="48" y="48" width="416" height="416" rx="68" fill="none" stroke="#b8860b" stroke-width="3" opacity="0.3"/>
-  <!-- Red seal background -->
-  <rect x="120" y="100" width="272" height="312" rx="12" fill="#9b1b1b"/>
-  <!-- Inner seal border -->
-  <rect x="132" y="112" width="248" height="288" rx="8" fill="none" stroke="#e8c95d" stroke-width="4"/>
-  <!-- Character 诗 (poetry) in gold -->
-  <text x="256" y="310" text-anchor="middle" font-family="serif" font-size="200" font-weight="bold" fill="#e8c95d">诗</text>
-  <!-- Bottom subtitle -->
-  <text x="256" y="460" text-anchor="middle" font-family="serif" font-size="36" fill="#b8860b" letter-spacing="8">咏流传</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <rect width="180" height="180" rx="36" fill="#fdf6e3"/>
+  <rect x="18" y="18" width="144" height="144" fill="#9b1b1b"/>
+  <rect x="26" y="26" width="128" height="128" fill="none" stroke="#e8c95d" stroke-width="3"/>
+  <text x="90" y="96" font-size="82" font-weight="bold" text-anchor="middle" dominant-baseline="middle"
+        font-family="SimSun,STSong,serif" fill="#e8c95d">诗</text>
 </svg>
 

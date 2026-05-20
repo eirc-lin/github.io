@@ -1,46 +1,56 @@
 // Service Worker for 诗词咏流传 PWA
 const CACHE_NAME = 'poetry-app-v1';
-const ASSETS = [
+const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './manifest.json'
 ];
 
-// Install: cache all static assets
+// Install: cache core assets
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[SW] Caching core assets');
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
   self.skipWaiting();
 });
 
-// Activate: remove old caches
+// Activate: clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      )
     )
   );
   self.clients.claim();
 });
 
-// Fetch: cache-first strategy for same-origin requests
+// Fetch: cache-first strategy
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
-  if (url.origin !== location.origin) return;
-
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        // Only cache same-origin successful responses
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
         }
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
         return response;
       });
+    }).catch(() => {
+      // Fallback for navigation requests
+      if (event.request.mode === 'navigate') {
+        return caches.match('./index.html');
+      }
     })
   );
 });
